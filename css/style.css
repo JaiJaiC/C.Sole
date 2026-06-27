@@ -201,22 +201,6 @@ body {
   to   { transform: rotate(360deg); }
 }
 
-/* Scroll-down hint */
-.scroll-hint {
-  position: absolute;
-  bottom: 2rem;
-  left: 50%;
-  transform: translateX(-50%);
-  color: var(--color-text-muted);
-  animation: scroll-bounce 2s ease-in-out infinite;
-  opacity: 0.6;
-}
-
-@keyframes scroll-bounce {
-  0%, 100% { transform: translateX(-50%) translateY(0); }
-  50%      { transform: translateX(-50%) translateY(8px); }
-}
-
 /* ═══════ PLAYER CARD ═══════ */
 .player-section {
   padding: var(--space-xl) 0 var(--space-lg);
