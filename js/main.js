@@ -1,6 +1,5 @@
 /* ============================================================
-   C.Sole — Player + Note Rain + Spectrum + Speech-to-Lyrics
-   Vanilla JS, zero dependencies
+   C.Sole — Auto-play + Loop + Glow + Spectrum
    ============================================================ */
 
 (function () {
@@ -34,10 +33,8 @@
     }
   ];
 
-  // ─── LocalStorage Keys ────────────────────────────────────
+  // ─── LocalStorage ─────────────────────────────────────────
   var STATE_KEY = 'csole_player';
-  var LYRICS_KEY = 'csole_lyrics_';
-
   function loadState() {
     try { var raw = localStorage.getItem(STATE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
     return {};
@@ -45,22 +42,13 @@
   function saveState(s) {
     try { localStorage.setItem(STATE_KEY, JSON.stringify(s)); } catch (e) {}
   }
-  function loadLyrics(songTitle) {
-    try { var raw = localStorage.getItem(LYRICS_KEY + songTitle); if (raw) return JSON.parse(raw); } catch (e) {}
-    return null;
-  }
-  function saveLyrics(songTitle, data) {
-    try { localStorage.setItem(LYRICS_KEY + songTitle, JSON.stringify(data)); } catch (e) {}
-  }
-  function deleteLyrics(songTitle) {
-    try { localStorage.removeItem(LYRICS_KEY + songTitle); } catch (e) {}
-  }
 
   // ─── DOM Refs ─────────────────────────────────────────────
   var $ = function (sel) { return document.querySelector(sel); };
 
   var dom = {
     notesCanvas:        $('#notes-rain'),
+    heroGuitarWrapper:  $('.hero-guitar-wrapper'),
     heroGuitar:         $('#hero-guitar'),
     trackTitle:         $('#track-title'),
     trackArtist:        $('#track-artist'),
@@ -82,16 +70,7 @@
     volWave1:           $('#vol-wave-1'),
     volWave2:           $('#vol-wave-2'),
     playlist:           $('#playlist'),
-    spectrumCanvas:     $('#spectrum-canvas'),
-    lyricsContainer:    $('#lyrics-container'),
-    lyricsEmpty:        $('#lyrics-empty'),
-    lyricsEmptyText:    $('#lyrics-empty-text'),
-    lyricsDisplay:      $('#lyrics-display'),
-    lyricsLines:        $('#lyrics-lines'),
-    lyricsRecording:    $('#lyrics-recording'),
-    recLive:            $('#rec-live'),
-    btnRecordLyrics:    $('#btn-record-lyrics'),
-    btnClearLyrics:     $('#btn-clear-lyrics')
+    spectrumCanvas:     $('#spectrum-canvas')
   };
 
   // ─── Audio Element ────────────────────────────────────────
@@ -128,14 +107,10 @@
     duration:       0,
     volume:         saved.volume != null ? saved.volume : 0.8,
     isShuffled:     false,
-    repeatMode:     'none',
+    repeatMode:     'all',      // Default: loop through all tracks
     shuffleHistory: [],
     _rafPending:    false
   };
-
-  // ─── Lyrics State ─────────────────────────────────────────
-  var currentLyrics = null;       // array of { time, text } or null
-  var lastLyricIdx = -1;
 
   // ─── Utility ──────────────────────────────────────────────
   function formatTime(sec) {
@@ -244,8 +219,7 @@
         var r = Math.floor(232 * intensity + 100 * (1 - intensity));
         var g = Math.floor(168 * intensity + 100 * (1 - intensity));
         var b = Math.floor(80 * intensity + 100 * (1 - intensity));
-        var alpha = 0.3 + intensity * 0.7;
-        ctx.fillStyle = 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+        ctx.fillStyle = 'rgba(' + r + ',' + g + ',' + b + ',' + (0.3 + intensity * 0.7) + ')';
         var x = i * (barWidth + gap);
         ctx.beginPath();
         ctx.roundRect(x, h - barHeight, barWidth, barHeight, [barWidth / 2, barWidth / 2, 0, 0]);
@@ -279,216 +253,6 @@
     if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
   }
 
-  // ═══════ LYRICS DISPLAY ═══════════════════════════════════
-
-  function loadLyricsForTrack() {
-    var track = PLAYLIST[state.currentIndex];
-    currentLyrics = loadLyrics(track.title);
-    lastLyricIdx = -1;
-    renderLyricsUI();
-  }
-
-  function renderLyricsUI() {
-    dom.lyricsEmpty.style.display = 'none';
-    dom.lyricsDisplay.style.display = 'none';
-    dom.lyricsRecording.style.display = 'none';
-    dom.lyricsContainer.classList.remove('recording');
-
-    if (recognition && recognition.running) return; // recording active
-
-    var track = PLAYLIST[state.currentIndex];
-    var hasSaved = !!loadLyrics(track.title);
-
-    if (currentLyrics && currentLyrics.length > 0) {
-      // Show saved lyrics
-      dom.lyricsDisplay.style.display = 'block';
-      dom.lyricsLines.innerHTML = '';
-      for (var i = 0; i < currentLyrics.length; i++) {
-        var line = document.createElement('p');
-        line.className = 'lyric-line';
-        line.textContent = currentLyrics[i].text;
-        line.setAttribute('data-idx', i);
-        dom.lyricsLines.appendChild(line);
-      }
-      dom.btnClearLyrics.style.display = 'inline-flex';
-    } else if (hasSaved && (!currentLyrics || currentLyrics.length === 0)) {
-      // Edge case: saved but empty array
-      dom.lyricsDisplay.style.display = 'block';
-      dom.lyricsLines.innerHTML = '';
-      dom.btnClearLyrics.style.display = 'inline-flex';
-    } else {
-      // No lyrics
-      dom.lyricsEmpty.style.display = 'block';
-      dom.lyricsEmptyText.innerHTML = 'Play this track and click <strong>Record Lyrics</strong> to auto-generate';
-      dom.btnClearLyrics.style.display = 'none';
-    }
-  }
-
-  function updateLyricsDisplay(time) {
-    if (!currentLyrics || currentLyrics.length === 0) return;
-
-    var activeIdx = -1;
-    for (var i = currentLyrics.length - 1; i >= 0; i--) {
-      if (time >= currentLyrics[i].time) { activeIdx = i; break; }
-    }
-    if (activeIdx === lastLyricIdx) return;
-    lastLyricIdx = activeIdx;
-
-    var lines = dom.lyricsLines.children;
-    for (var i = 0; i < lines.length; i++) {
-      lines[i].classList.remove('active', 'past');
-      if (i < activeIdx) lines[i].classList.add('past');
-      else if (i === activeIdx) lines[i].classList.add('active');
-    }
-
-    // Scroll active into view
-    if (activeIdx >= 0 && lines[activeIdx]) {
-      lines[activeIdx].scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  }
-
-  // ═══════ SPEECH RECOGNITION (Web Speech API) ══════════════
-
-  var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  var recognition = null;
-  var recStartTime = 0;
-  var recResults = [];
-
-  function initSpeechRecognition() {
-    if (!SpeechRecognition) {
-      showToast('Speech recognition not supported in this browser. Please use Chrome.', 'error');
-      return false;
-    }
-    if (!recognition) {
-      recognition = new SpeechRecognition();
-      recognition.lang = 'zh-CN';
-      recognition.interimResults = true;
-      recognition.continuous = true;
-      recognition.maxAlternatives = 1;
-
-      recognition.onresult = function (event) {
-        var interim = '';
-        var finalText = '';
-
-        for (var i = event.resultIndex; i < event.results.length; i++) {
-          var result = event.results[i];
-          if (result.isFinal) {
-            finalText += result[0].transcript;
-            // Save final result with timestamp
-            var elapsed = (Date.now() - recStartTime) / 1000;
-            recResults.push({ time: elapsed, text: result[0].transcript.trim() });
-          } else {
-            interim += result[0].transcript;
-          }
-        }
-
-        // Show interim in live display
-        if (interim) {
-          dom.recLive.textContent = interim;
-        }
-
-        // Show final results incrementally in the lyrics display
-        if (finalText && recResults.length > 0) {
-          dom.recLive.textContent = '';
-          // Render partial results
-          dom.lyricsLines.innerHTML = '';
-          for (var j = 0; j < recResults.length; j++) {
-            var line = document.createElement('p');
-            line.className = 'lyric-line';
-            line.textContent = recResults[j].text;
-            dom.lyricsLines.appendChild(line);
-          }
-          dom.lyricsRecording.style.display = 'none';
-          dom.lyricsDisplay.style.display = 'block';
-          dom.lyricsContainer.classList.remove('recording');
-          dom.lyricsEmpty.style.display = 'none';
-        }
-      };
-
-      recognition.onerror = function (event) {
-        if (event.error === 'no-speech') {
-          // Just keep listening quietly
-          return;
-        }
-        if (event.error === 'aborted') return;
-        showToast('Recognition error: ' + event.error, 'error');
-        stopRecording(false);
-      };
-
-      recognition.onend = function () {
-        // If we were still recording (not stopped by user), restart
-        if (recognition.running) {
-          try { recognition.start(); } catch (e) {}
-        }
-      };
-    }
-    return true;
-  }
-
-  function startRecording() {
-    if (!initSpeechRecognition()) return;
-
-    // Reset
-    recResults = [];
-    recStartTime = Date.now();
-    lastLyricIdx = -1;
-    dom.lyricsLines.innerHTML = '';
-
-    // UI state
-    dom.lyricsEmpty.style.display = 'none';
-    dom.lyricsDisplay.style.display = 'none';
-    dom.lyricsRecording.style.display = 'flex';
-    dom.lyricsContainer.classList.add('recording');
-    dom.recLive.textContent = '';
-    dom.btnRecordLyrics.classList.add('recording');
-    dom.btnRecordLyrics.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><rect x="6" y="4" width="12" height="16" rx="2"/></svg> Stop Recording';
-    dom.btnClearLyrics.style.display = 'none';
-
-    // Start recognition
-    recognition.running = true;
-    try { recognition.start(); } catch (e) {}
-    showToast('Recording lyrics — sing or speak into your microphone');
-  }
-
-  function stopRecording(save) {
-    if (!recognition) return;
-    recognition.running = false;
-    try { recognition.stop(); } catch (e) {}
-
-    dom.btnRecordLyrics.classList.remove('recording');
-    dom.btnRecordLyrics.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><circle cx="12" cy="12" r="6"/><path d="M12 18v4M8 22h8" stroke="currentColor" stroke-width="2" fill="none"/></svg> Record Lyrics';
-    dom.lyricsRecording.style.display = 'none';
-    dom.lyricsContainer.classList.remove('recording');
-    dom.recLive.textContent = '';
-
-    if (save && recResults.length > 0) {
-      var track = PLAYLIST[state.currentIndex];
-      saveLyrics(track.title, recResults);
-      currentLyrics = recResults;
-      renderLyricsUI();
-      showToast('Lyrics saved for ' + track.title + ' (' + recResults.length + ' lines)');
-    } else if (!save || recResults.length === 0) {
-      renderLyricsUI();
-    }
-  }
-
-  function toggleRecording() {
-    if (recognition && recognition.running) {
-      stopRecording(true);
-    } else {
-      startRecording();
-    }
-  }
-
-  function clearLyricsForTrack() {
-    var track = PLAYLIST[state.currentIndex];
-    deleteLyrics(track.title);
-    currentLyrics = null;
-    lastLyricIdx = -1;
-    renderLyricsUI();
-    showToast('Lyrics cleared for ' + track.title);
-  }
-
   // ═══════ PLAYER METHODS ════════════════════════════════════
 
   function loadTrack(index) {
@@ -505,9 +269,6 @@
     var credit = COVER_CREDITS[track.title];
     dom.trackArtist.textContent = credit ? 'C.Sole · COVER ' + credit : 'C.Sole';
 
-    // Load lyrics from localStorage
-    loadLyricsForTrack();
-
     audio.src = track.src;
     audio.load();
     persistState();
@@ -518,7 +279,10 @@
     var p = audio.play();
     if (p && p.catch) {
       p.catch(function (err) {
-        if (err.name === 'NotAllowedError') { /* needs user gesture */ }
+        if (err.name === 'NotAllowedError') {
+          // Browser blocked autoplay — wait for user gesture
+          showToast('Click anywhere to start playback');
+        }
       });
     }
   }
@@ -597,6 +361,7 @@
       dom.eqBars.classList.add('active');
       dom.btnPlay.setAttribute('aria-label', 'Pause');
       dom.heroGuitar.classList.add('playing');
+      dom.heroGuitarWrapper.classList.add('playing');
       setNotesRainSpeed(true);
     } else {
       dom.iconPlay.style.display = 'block';
@@ -604,6 +369,7 @@
       dom.eqBars.classList.remove('active');
       dom.btnPlay.setAttribute('aria-label', 'Play');
       dom.heroGuitar.classList.remove('playing');
+      dom.heroGuitarWrapper.classList.remove('playing');
       setNotesRainSpeed(false);
     }
   }
@@ -613,7 +379,6 @@
     dom.progressBar.max = state.duration || 100;
     dom.timeCurrent.textContent = formatTime(state.currentTime);
     if (state.duration > 0) dom.timeDuration.textContent = formatTime(state.duration);
-    updateLyricsDisplay(state.currentTime);
   }
 
   function renderPlaylist() {
@@ -703,15 +468,8 @@
   });
 
   audio.addEventListener('ended', function () {
-    // If recording, stop and save
-    if (recognition && recognition.running) stopRecording(true);
-
-    if (state.repeatMode === 'one') { audio.currentTime = 0; play(); }
-    else if (state.repeatMode === 'all') { next(); }
-    else {
-      if (state.currentIndex < PLAYLIST.length - 1) { next(); }
-      else { state.isPlaying = false; renderPlayingState(); renderPlaylist(); audio.currentTime = 0; }
-    }
+    // Auto-advance to next track; repeatMode 'all' loops back to first
+    next();
   });
 
   audio.addEventListener('error', function () {
@@ -728,6 +486,33 @@
 
   // ═══════ UI EVENTS ════════════════════════════════════════
 
+  // One-time click-to-start for browsers that block autoplay
+  function tryAutoplay() {
+    loadTrack(state.currentIndex);
+    renderPlaylist();
+    renderPlayingState();
+
+    // Attempt autoplay
+    var p = audio.play();
+    if (p && p.catch) {
+      p.catch(function () {
+        // Autoplay blocked — listen for first user interaction
+        var started = false;
+        function onInteraction() {
+          if (started) return;
+          started = true;
+          document.removeEventListener('click', onInteraction);
+          document.removeEventListener('keydown', onInteraction);
+          document.removeEventListener('touchstart', onInteraction);
+          play();
+        }
+        document.addEventListener('click', onInteraction);
+        document.addEventListener('keydown', onInteraction);
+        document.addEventListener('touchstart', onInteraction);
+      });
+    }
+  }
+
   dom.btnPlay.addEventListener('click', togglePlay);
 
   document.addEventListener('keydown', function (e) {
@@ -743,8 +528,6 @@
   dom.volumeSlider.addEventListener('input', function () { setVolume(parseInt(dom.volumeSlider.value, 10) / 100); });
   dom.btnShuffle.addEventListener('click', toggleShuffle);
   dom.btnRepeat.addEventListener('click', toggleRepeat);
-  dom.btnRecordLyrics.addEventListener('click', toggleRecording);
-  dom.btnClearLyrics.addEventListener('click', clearLyricsForTrack);
 
   // ═══════ INIT ═════════════════════════════════════════════
 
@@ -752,11 +535,15 @@
     audio.volume = state.volume;
     dom.volumeSlider.value = Math.round(state.volume * 100);
     updateVolumeIcon();
+
+    // Show 'all' repeat as default
+    dom.btnRepeat.classList.add('repeat-on');
+
     initNotesRain();
     initSpectrum();
-    loadTrack(state.currentIndex);
-    renderPlaylist();
-    renderPlayingState();
+
+    // Auto-play on page load
+    tryAutoplay();
   }
 
   init();
