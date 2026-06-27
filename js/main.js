@@ -151,6 +151,8 @@
   }
 
   function initNotesRain() {
+    // Skip on mobile — saves GPU and prevents flicker
+    if (isMobile) return;
     var canvas = dom.notesCanvas;
     if (!canvas) return;
     var ctx = canvas.getContext('2d');

@@ -599,8 +599,12 @@ body {
   }
   .hero-logo { font-size: clamp(2.5rem, 10vw, 3.5rem); }
 
-  /* Kill GPU-heavy effects on mobile */
-  .hero-glow-disc { display: none; }
+  /* Kill ALL animations on mobile */
+  .hero-glow-disc,
+  .hero-wave-ring { display: none; }
+  .hero-cover { animation: none !important; }
+  .hero-guitar-wrapper.playing .hero-wave-ring { animation: none !important; }
+  #notes-rain { display: none; }
   .player-card, .playlist {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
