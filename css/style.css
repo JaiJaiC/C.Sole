@@ -78,6 +78,61 @@ body {
   pointer-events: none;
 }
 
+/* ───── AUTOPLAY OVERLAY ───── */
+.autoplay-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  animation: overlay-fade-in 0.5s ease;
+  transition: opacity 0.4s ease;
+}
+
+.autoplay-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+@keyframes overlay-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.autoplay-overlay-inner {
+  text-align: center;
+  animation: overlay-pulse 2s ease-in-out infinite;
+}
+
+@keyframes overlay-pulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.04); }
+}
+
+.autoplay-icon {
+  color: var(--color-accent);
+  margin-bottom: var(--space-lg);
+  display: inline-block;
+  animation: icon-breathe 1.5s ease-in-out infinite;
+}
+
+@keyframes icon-breathe {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50%      { transform: scale(1.15); opacity: 1; }
+}
+
+.autoplay-text {
+  font-family: var(--font-body);
+  font-size: clamp(1rem, 3vw, 1.25rem);
+  color: var(--color-text);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+}
+
 /* ═══════ HERO — Full viewport ═══════ */
 .hero {
   position: relative;
