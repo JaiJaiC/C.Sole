@@ -151,8 +151,6 @@
   }
 
   function initNotesRain() {
-    // Skip on mobile — saves GPU and prevents flicker
-    if (isMobile) return;
     var canvas = dom.notesCanvas;
     if (!canvas) return;
     var ctx = canvas.getContext('2d');
@@ -160,7 +158,7 @@
     function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
     resize();
     window.addEventListener('resize', resize);
-    var noteCount = 120;
+    var noteCount = isMobile ? 50 : 120;
     spawnNote(w, noteCount);
     function animate() {
       ctx.clearRect(0, 0, w, h);
