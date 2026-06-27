@@ -65,7 +65,6 @@
     btnShuffle:         $('#btn-shuffle'),
     btnRepeat:          $('#btn-repeat'),
     repeatOne:          $('#repeat-one'),
-    autoplayOverlay:    $('#autoplay-overlay'),
     volumeSlider:       $('#volume-slider'),
     iconVolume:         $('#icon-volume'),
     volWave1:           $('#vol-wave-1'),
@@ -484,41 +483,30 @@
 
   // ═══════ UI EVENTS ════════════════════════════════════════
 
-  // Click-to-dismiss overlay + start playback
-  function dismissOverlay() {
-    if (!dom.autoplayOverlay) return;
-    dom.autoplayOverlay.classList.add('hidden');
-    setTimeout(function () {
-      dom.autoplayOverlay.style.display = 'none';
-    }, 400);
-  }
-
+  // Silent autoplay — if blocked, first click/tap anywhere starts playback
   function tryAutoplay() {
     loadTrack(state.currentIndex);
     renderPlaylist();
     renderPlayingState();
 
-    // Attempt autoplay
     var p = audio.play();
     if (p && p.then) {
-      p.then(function () {
-        // Autoplay succeeded — hide overlay if it was shown
-        dismissOverlay();
-      }).catch(function () {
-        // Autoplay blocked — show overlay
-        if (dom.autoplayOverlay) {
-          dom.autoplayOverlay.style.display = 'flex';
+      p.catch(function () {
+        // Autoplay blocked — silently wait for first interaction
+        var started = false;
+        function onInteraction() {
+          if (started) return;
+          started = true;
+          document.removeEventListener('click', onInteraction);
+          document.removeEventListener('keydown', onInteraction);
+          document.removeEventListener('touchstart', onInteraction);
+          if (!state.isPlaying) play();
         }
+        document.addEventListener('click', onInteraction);
+        document.addEventListener('keydown', onInteraction);
+        document.addEventListener('touchstart', onInteraction);
       });
     }
-  }
-
-  // Overlay click = start playing
-  if (dom.autoplayOverlay) {
-    dom.autoplayOverlay.addEventListener('click', function () {
-      dismissOverlay();
-      if (!state.isPlaying) play();
-    });
   }
 
   dom.btnPlay.addEventListener('click', togglePlay);
