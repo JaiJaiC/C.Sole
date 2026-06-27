@@ -1,0 +1,16 @@
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+*.sublime-*
+
+# Build artifacts
+node_modules/
+dist/
+
+# Python test server cache
+__pycache__/
