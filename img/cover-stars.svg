@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">
+  <!-- Night sky gradient background -->
+  <defs>
+    <radialGradient id="g1" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#2a3058"/>
+      <stop offset="100%" stop-color="#0d0f1a"/>
+    </radialGradient>
+  </defs>
+  <rect width="200" height="200" rx="200" fill="url(#g1)"/>
+  <!-- Stars -->
+  <circle cx="40" cy="30" r="1.5" fill="#fff" opacity="0.9"/>
+  <circle cx="160" cy="25" r="1.5" fill="#fff" opacity="0.7"/>
+  <circle cx="70" cy="60" r="1" fill="#fff" opacity="0.6"/>
+  <circle cx="150" cy="70" r="1.2" fill="#fff" opacity="0.8"/>
+  <circle cx="30" cy="100" r="1" fill="#fff" opacity="0.5"/>
+  <circle cx="170" cy="110" r="1.3" fill="#fff" opacity="0.7"/>
+  <circle cx="55" cy="140" r="1" fill="#fff" opacity="0.4"/>
+  <circle cx="140" cy="150" r="0.8" fill="#fff" opacity="0.6"/>
+  <circle cx="90" cy="20" r="1" fill="#fff" opacity="0.5"/>
+  <!-- Brightest star -->
+  <circle cx="110" cy="45" r="3" fill="#e8a850" opacity="0.9"/>
+  <circle cx="110" cy="45" r="6" fill="#e8a850" opacity="0.15"/>
+  <circle cx="110" cy="45" r="10" fill="#e8a850" opacity="0.06"/>
+  <!-- Guitar silhouette -->
+  <g transform="translate(0,5)">
+    <ellipse cx="100" cy="140" rx="36" ry="28" stroke="#b8c0e0" stroke-width="2.5" opacity="0.5"/>
+    <ellipse cx="100" cy="112" rx="24" ry="20" stroke="#b8c0e0" stroke-width="2.5" opacity="0.5"/>
+    <circle cx="100" cy="120" r="9" stroke="#b8c0e0" stroke-width="1.2" opacity="0.3"/>
+    <line x1="100" y1="92" x2="100" y2="50" stroke="#b8c0e0" stroke-width="4" stroke-linecap="round" opacity="0.5"/>
+    <rect x="92" y="36" width="16" height="16" rx="3" stroke="#b8c0e0" stroke-width="2" opacity="0.5"/>
+  </g>
+</svg>
