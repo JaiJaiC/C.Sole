@@ -276,6 +276,10 @@
 
   function play() {
     ensureVisRunning();
+    // Must resume AudioContext synchronously (iOS requirement)
+    if (audioCtx && audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
     var p = audio.play();
     if (p && p.catch) {
       p.catch(function (err) {
@@ -483,7 +487,7 @@
 
   // ═══════ UI EVENTS ════════════════════════════════════════
 
-  // Silent autoplay — if blocked, first click/tap anywhere starts playback
+  // Silent autoplay — works on desktop + mobile (iOS/Android)
   function tryAutoplay() {
     loadTrack(state.currentIndex);
     renderPlaylist();
@@ -492,19 +496,33 @@
     var p = audio.play();
     if (p && p.then) {
       p.catch(function () {
-        // Autoplay blocked — silently wait for first interaction
+        // Autoplay blocked — wait for any user interaction
         var started = false;
-        function onInteraction() {
+
+        function onInteraction(e) {
           if (started) return;
           started = true;
+
+          // Remove all listeners
           document.removeEventListener('click', onInteraction);
+          document.removeEventListener('touchend', onInteraction);
           document.removeEventListener('keydown', onInteraction);
-          document.removeEventListener('touchstart', onInteraction);
-          if (!state.isPlaying) play();
+
+          // Resume AudioContext (critical for iOS)
+          if (audioCtx && audioCtx.state === 'suspended') {
+            audioCtx.resume();
+          }
+
+          // Start playback
+          if (!state.isPlaying) {
+            play();
+          }
         }
+
+        // click + touchend (iOS requires touchend for first-time audio context)
         document.addEventListener('click', onInteraction);
+        document.addEventListener('touchend', onInteraction);
         document.addEventListener('keydown', onInteraction);
-        document.addEventListener('touchstart', onInteraction);
       });
     }
   }
