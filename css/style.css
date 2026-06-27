@@ -584,6 +584,9 @@ body {
   .hero-logo { font-size: clamp(2.5rem, 10vw, 3.5rem); }
 
   .hero-glow-disc { display: none; }
+  .hero-wave-ring { display: none; }
+  .hero-cover { animation-duration: 60s !important; }
+  .hero-cover.playing { animation-duration: 30s !important; }
   .player-card, .playlist {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;

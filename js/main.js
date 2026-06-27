@@ -158,9 +158,13 @@
     function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
     resize();
     window.addEventListener('resize', resize);
-    var noteCount = isMobile ? 50 : 120;
+    var noteCount = isMobile ? 30 : 120;
+    var throttleMs = isMobile ? 80 : 0; // ~12fps on mobile
+    var lastFrame = 0;
     spawnNote(w, noteCount);
-    function animate() {
+    function animate(ts) {
+      if (ts - lastFrame < throttleMs) { requestAnimationFrame(animate); return; }
+      lastFrame = ts;
       ctx.clearRect(0, 0, w, h);
       for (var i = 0; i < notes.length; i++) {
         var n = notes[i];
@@ -176,10 +180,10 @@
         }
       }
       while (notes.length < noteCount) spawnNote(w, 1);
-      if (notes.length > noteCount + 30) notes.splice(0, notes.length - noteCount);
+      if (notes.length > noteCount + 15) notes.splice(0, notes.length - noteCount);
       requestAnimationFrame(animate);
     }
-    animate();
+    requestAnimationFrame(animate);
   }
 
   function setNotesRainSpeed(fast) {
