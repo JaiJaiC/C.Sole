@@ -42,6 +42,9 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   scroll-behavior: smooth;
+  /* Prevent address-bar-triggered viewport resize flicker */
+  height: 100%;
+  overflow: hidden;
 }
 
 body {
@@ -50,8 +53,12 @@ body {
   font-family: var(--font-body);
   font-weight: 300;
   line-height: 1.6;
-  min-height: 100vh;
+  height: 100%;
+  overflow-y: auto;
   overflow-x: hidden;
+  /* Use momentum scrolling while keeping viewport stable */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
 }
 
 .container {
@@ -73,10 +80,8 @@ body {
 #notes-rain {
   position: fixed;
   top: 0; left: 0;
+  right: 0; bottom: 0;
   width: 100%; height: 100%;
-  /* Use dvh on supported browsers to avoid address-bar flicker */
-  height: 100dvh;
-  height: 100%;
   z-index: 0;
   pointer-events: none;
   -webkit-transform: translateZ(0);
@@ -584,9 +589,6 @@ body {
   .hero-logo { font-size: clamp(2.5rem, 10vw, 3.5rem); }
 
   .hero-glow-disc { display: none; }
-  .hero-wave-ring { display: none; }
-  .hero-cover { animation-duration: 60s !important; }
-  .hero-cover.playing { animation-duration: 30s !important; }
   .player-card, .playlist {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;

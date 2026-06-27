@@ -155,11 +155,18 @@
     if (!canvas) return;
     var ctx = canvas.getContext('2d');
     var w, h;
-    function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+    var resizeTimer;
+    function resize() {
+      w = canvas.width  = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
     resize();
-    window.addEventListener('resize', resize);
-    var noteCount = isMobile ? 30 : 120;
-    var throttleMs = isMobile ? 80 : 0; // ~12fps on mobile
+    window.addEventListener('resize', function () {
+      if (isMobile) { clearTimeout(resizeTimer); resizeTimer = setTimeout(resize, 300); }
+      else resize();
+    });
+    var noteCount = isMobile ? 60 : 120;
+    var throttleMs = isMobile ? 50 : 0; // ~20fps on mobile
     var lastFrame = 0;
     spawnNote(w, noteCount);
     function animate(ts) {
