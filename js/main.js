@@ -1,86 +1,25 @@
 /* ============================================================
-   C.Sole — Player + Note Rain + Spectrum + Dynamic Lyrics
+   C.Sole — Player + Note Rain + Spectrum + Speech-to-Lyrics
    Vanilla JS, zero dependencies
    ============================================================ */
 
 (function () {
   'use strict';
 
-  // ─── Lyrics Data (timed, original Chinese lyrics) ─────────
-  var LYRICS = {
-    '夜空中最亮的星': [
-      { time: 0,   text: '夜空中最亮的星' },
-      { time: 5,   text: '能否听清' },
-      { time: 9,   text: '那仰望的人' },
-      { time: 13,  text: '心底的孤独和叹息' },
-      { time: 19,  text: '夜空中最亮的星' },
-      { time: 23,  text: '能否记起' },
-      { time: 27,  text: '曾与我同行' },
-      { time: 31,  text: '消失在风里的身影' },
-      { time: 37,  text: '我祈祷拥有一颗透明的心灵' },
-      { time: 43,  text: '和会流泪的眼睛' },
-      { time: 49,  text: '给我再去相信的勇气' },
-      { time: 53,  text: '越过谎言去拥抱你' },
-      { time: 59,  text: '每当我找不到存在的意义' },
-      { time: 65,  text: '每当我迷失在黑夜里' },
-      { time: 71,  text: '夜空中最亮的星' },
-      { time: 77,  text: '请指引我靠近你' }
-    ],
-    '我是真的爱上你': [
-      { time: 0,   text: '你有一双会说话的眼睛' },
-      { time: 6,   text: '你有善解人意的心' },
-      { time: 11,  text: '不知天高地厚的我' },
-      { time: 16,  text: '你的微笑总是让我为你着迷' },
-      { time: 23,  text: '你有一双深情的眼睛' },
-      { time: 28,  text: '你有融化冰雪的魔力' },
-      { time: 33,  text: '从来不敢奢求的我' },
-      { time: 38,  text: '你的美丽总是让我躲不过去' },
-      { time: 45,  text: '什么原因你的发香总挥之不去' },
-      { time: 51,  text: '我的世界什么时候' },
-      { time: 55,  text: '开始昼夜难分' },
-      { time: 59,  text: '翻天覆地来去都是因为想你' },
-      { time: 67,  text: '喔...我偷偷的爱上你' },
-      { time: 75,  text: '却不敢告诉你' },
-      { time: 79,  text: '因为我知道我给不到你要的东西' }
-    ],
-    '我的歌声里': [
-      { time: 0,   text: '没有一点点防备' },
-      { time: 5,   text: '也没有一丝顾虑' },
-      { time: 9,   text: '你就这样出现在我的世界里' },
-      { time: 15,  text: '带给我惊喜 情不自已' },
-      { time: 22,  text: '可是你偏又这样' },
-      { time: 27,  text: '在我不知不觉中悄悄的消失' },
-      { time: 33,  text: '从我的世界里没有音讯' },
-      { time: 39,  text: '剩下的只是回忆' },
-      { time: 45,  text: '你存在 我深深的脑海里' },
-      { time: 53,  text: '我的梦里 我的心里 我的歌声里' },
-      { time: 61,  text: '你存在 我深深的脑海里' },
-      { time: 69,  text: '我的梦里 我的心里 我的歌声里' }
-    ]
+  // ─── Cover credits ────────────────────────────────────────
+  var COVER_CREDITS = {
+    '我是真的爱上你': '王杰',
+    '夜空中最亮的星': '逃跑计划'
   };
 
   // ─── Song Covers ──────────────────────────────────────────
   var COVERS = {
-    '夜空中最亮的星': 'img/cover-stars.svg',
     '我是真的爱上你': 'img/cover-love.svg',
-    '我的歌声里':     'img/cover-song.svg'
-  };
-
-  // ─── Cover artist credits ─────────────────────────────────
-  var COVER_CREDITS = {
-    '夜空中最亮的星': '逃跑计划',
-    '我是真的爱上你': '王杰',
-    '我的歌声里':     '曲婉婷'
+    '夜空中最亮的星': 'img/cover-stars.svg'
   };
 
   // ─── Playlist Data ────────────────────────────────────────
   var PLAYLIST = [
-    {
-      title: '夜空中最亮的星',
-      artist: 'C.Sole',
-      src: 'mp3/夜空中最亮的星.mp3',
-      cover: COVERS['夜空中最亮的星']
-    },
     {
       title: '我是真的爱上你',
       artist: 'C.Sole',
@@ -88,53 +27,71 @@
       cover: COVERS['我是真的爱上你']
     },
     {
-      title: '我的歌声里',
+      title: '夜空中最亮的星',
       artist: 'C.Sole',
-      src: 'mp3/我的歌声里.mp3',
-      cover: COVERS['我的歌声里']
+      src: 'mp3/夜空中最亮的星.mp3',
+      cover: COVERS['夜空中最亮的星']
     }
   ];
 
-  // ─── LocalStorage ─────────────────────────────────────────
-  var STORAGE_KEY = 'csole_player';
+  // ─── LocalStorage Keys ────────────────────────────────────
+  var STATE_KEY = 'csole_player';
+  var LYRICS_KEY = 'csole_lyrics_';
+
   function loadState() {
-    try { var raw = localStorage.getItem(STORAGE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    try { var raw = localStorage.getItem(STATE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
     return {};
   }
   function saveState(s) {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); } catch (e) {}
+    try { localStorage.setItem(STATE_KEY, JSON.stringify(s)); } catch (e) {}
+  }
+  function loadLyrics(songTitle) {
+    try { var raw = localStorage.getItem(LYRICS_KEY + songTitle); if (raw) return JSON.parse(raw); } catch (e) {}
+    return null;
+  }
+  function saveLyrics(songTitle, data) {
+    try { localStorage.setItem(LYRICS_KEY + songTitle, JSON.stringify(data)); } catch (e) {}
+  }
+  function deleteLyrics(songTitle) {
+    try { localStorage.removeItem(LYRICS_KEY + songTitle); } catch (e) {}
   }
 
   // ─── DOM Refs ─────────────────────────────────────────────
   var $ = function (sel) { return document.querySelector(sel); };
 
   var dom = {
-    notesCanvas:      $('#notes-rain'),
-    heroGuitar:       $('#hero-guitar'),
-    trackTitle:       $('#track-title'),
-    trackArtist:      $('#track-artist'),
-    coverImg:         $('#cover-img'),
-    eqBars:           $('#eq-bars'),
-    progressBar:      $('#progress-bar'),
-    timeCurrent:      $('#time-current'),
-    timeDuration:     $('#time-duration'),
-    btnPlay:          $('#btn-play'),
-    iconPlay:         $('#icon-play'),
-    iconPause:        $('#icon-pause'),
-    btnPrev:          $('#btn-prev'),
-    btnNext:          $('#btn-next'),
-    btnShuffle:       $('#btn-shuffle'),
-    btnRepeat:        $('#btn-repeat'),
-    repeatOne:        $('#repeat-one'),
-    volumeSlider:     $('#volume-slider'),
-    iconVolume:       $('#icon-volume'),
-    volWave1:         $('#vol-wave-1'),
-    volWave2:         $('#vol-wave-2'),
-    playlist:         $('#playlist'),
-    spectrumCanvas:   $('#spectrum-canvas'),
-    lyricsDynamic:    $('#lyrics-dynamic'),
-    lyricLineDynamic: $('#lyric-line-dynamic'),
-    lyricsPlaceholder:$('#lyrics-placeholder')
+    notesCanvas:        $('#notes-rain'),
+    heroGuitar:         $('#hero-guitar'),
+    trackTitle:         $('#track-title'),
+    trackArtist:        $('#track-artist'),
+    coverImg:           $('#cover-img'),
+    eqBars:             $('#eq-bars'),
+    progressBar:        $('#progress-bar'),
+    timeCurrent:        $('#time-current'),
+    timeDuration:       $('#time-duration'),
+    btnPlay:            $('#btn-play'),
+    iconPlay:           $('#icon-play'),
+    iconPause:          $('#icon-pause'),
+    btnPrev:            $('#btn-prev'),
+    btnNext:            $('#btn-next'),
+    btnShuffle:         $('#btn-shuffle'),
+    btnRepeat:          $('#btn-repeat'),
+    repeatOne:          $('#repeat-one'),
+    volumeSlider:       $('#volume-slider'),
+    iconVolume:         $('#icon-volume'),
+    volWave1:           $('#vol-wave-1'),
+    volWave2:           $('#vol-wave-2'),
+    playlist:           $('#playlist'),
+    spectrumCanvas:     $('#spectrum-canvas'),
+    lyricsContainer:    $('#lyrics-container'),
+    lyricsEmpty:        $('#lyrics-empty'),
+    lyricsEmptyText:    $('#lyrics-empty-text'),
+    lyricsDisplay:      $('#lyrics-display'),
+    lyricsLines:        $('#lyrics-lines'),
+    lyricsRecording:    $('#lyrics-recording'),
+    recLive:            $('#rec-live'),
+    btnRecordLyrics:    $('#btn-record-lyrics'),
+    btnClearLyrics:     $('#btn-clear-lyrics')
   };
 
   // ─── Audio Element ────────────────────────────────────────
@@ -175,6 +132,10 @@
     shuffleHistory: [],
     _rafPending:    false
   };
+
+  // ─── Lyrics State ─────────────────────────────────────────
+  var currentLyrics = null;       // array of { time, text } or null
+  var lastLyricIdx = -1;
 
   // ─── Utility ──────────────────────────────────────────────
   function formatTime(sec) {
@@ -219,14 +180,11 @@
     if (!canvas) return;
     var ctx = canvas.getContext('2d');
     var w, h;
-
     function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
     resize();
     window.addEventListener('resize', resize);
-
     var noteCount = 120;
     spawnNote(w, noteCount);
-
     function animate() {
       ctx.clearRect(0, 0, w, h);
       for (var i = 0; i < notes.length; i++) {
@@ -238,10 +196,8 @@
         ctx.fillStyle = 'rgba(232, 168, 80, ' + n.opacity + ')';
         ctx.fillText(n.char, n.x + wobX, n.y);
         if (n.y > h + 50) {
-          n.y = -(Math.random() * 200) - 20;
-          n.x = Math.random() * w;
-          n.speed = 0.3 + Math.random() * 1.2;
-          n.opacity = 0.08 + Math.random() * 0.2;
+          n.y = -(Math.random() * 200) - 20; n.x = Math.random() * w;
+          n.speed = 0.3 + Math.random() * 1.2; n.opacity = 0.08 + Math.random() * 0.2;
         }
       }
       while (notes.length < noteCount) spawnNote(w, 1);
@@ -263,7 +219,6 @@
     if (!canvas) return;
     var ctx = canvas.getContext('2d');
     var w, h;
-
     function resize() {
       var rect = canvas.getBoundingClientRect();
       w = canvas.width  = rect.width * (window.devicePixelRatio || 1);
@@ -274,22 +229,14 @@
 
     function draw() {
       ctx.clearRect(0, 0, w, h);
-
-      if (!analyser) {
-        drawIdleWave(ctx, w, h);
-        requestAnimationFrame(draw);
-        return;
-      }
-
+      if (!analyser) { drawIdleWave(ctx, w, h); requestAnimationFrame(draw); return; }
       var bufferLength = analyser.frequencyBinCount;
       var dataArray = new Uint8Array(bufferLength);
       analyser.getByteFrequencyData(dataArray);
-
       var barCount = 64;
       var step = Math.floor(bufferLength / barCount);
       var barWidth = (w / barCount) * 0.75;
       var gap = (w / barCount) * 0.25;
-
       for (var i = 0; i < barCount; i++) {
         var val = dataArray[i * step] || 0;
         var barHeight = (val / 255) * h * 0.9;
@@ -300,9 +247,8 @@
         var alpha = 0.3 + intensity * 0.7;
         ctx.fillStyle = 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
         var x = i * (barWidth + gap);
-        var y = h - barHeight;
         ctx.beginPath();
-        ctx.roundRect(x, y, barWidth, barHeight, [barWidth / 2, barWidth / 2, 0, 0]);
+        ctx.roundRect(x, h - barHeight, barWidth, barHeight, [barWidth / 2, barWidth / 2, 0, 0]);
         ctx.fill();
       }
       requestAnimationFrame(draw);
@@ -318,9 +264,8 @@
         var bh = wave * ch * 0.4;
         context.fillStyle = 'rgba(232, 168, 80, 0.12)';
         var x = i * (barWidth + gap);
-        var y = ch - bh;
         context.beginPath();
-        context.roundRect(x, y, barWidth, bh, [barWidth / 2, barWidth / 2, 0, 0]);
+        context.roundRect(x, ch - bh, barWidth, bh, [barWidth / 2, barWidth / 2, 0, 0]);
         context.fill();
       }
     }
@@ -334,68 +279,214 @@
     if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
   }
 
-  // ═══════ DYNAMIC LYRICS (single line, crossfade) ══════════
-  var currentLyrics = null;
-  var lastActiveIdx = -1;
-  var lyricsTimeout = null;
+  // ═══════ LYRICS DISPLAY ═══════════════════════════════════
 
-  function setLyrics(trackTitle) {
-    currentLyrics = LYRICS[trackTitle] || null;
-    lastActiveIdx = -1;
-
-    if (!currentLyrics || currentLyrics.length === 0) {
-      dom.lyricsDynamic.style.display = 'none';
-      dom.lyricsPlaceholder.style.display = 'block';
-      return;
-    }
-
-    dom.lyricsPlaceholder.style.display = 'none';
-    dom.lyricsDynamic.style.display = 'block';
-    dom.lyricLineDynamic.textContent = '';
-    dom.lyricLineDynamic.classList.remove('fading', 'entering');
+  function loadLyricsForTrack() {
+    var track = PLAYLIST[state.currentIndex];
+    currentLyrics = loadLyrics(track.title);
+    lastLyricIdx = -1;
+    renderLyricsUI();
   }
 
-  function updateLyrics(time) {
+  function renderLyricsUI() {
+    dom.lyricsEmpty.style.display = 'none';
+    dom.lyricsDisplay.style.display = 'none';
+    dom.lyricsRecording.style.display = 'none';
+    dom.lyricsContainer.classList.remove('recording');
+
+    if (recognition && recognition.running) return; // recording active
+
+    var track = PLAYLIST[state.currentIndex];
+    var hasSaved = !!loadLyrics(track.title);
+
+    if (currentLyrics && currentLyrics.length > 0) {
+      // Show saved lyrics
+      dom.lyricsDisplay.style.display = 'block';
+      dom.lyricsLines.innerHTML = '';
+      for (var i = 0; i < currentLyrics.length; i++) {
+        var line = document.createElement('p');
+        line.className = 'lyric-line';
+        line.textContent = currentLyrics[i].text;
+        line.setAttribute('data-idx', i);
+        dom.lyricsLines.appendChild(line);
+      }
+      dom.btnClearLyrics.style.display = 'inline-flex';
+    } else if (hasSaved && (!currentLyrics || currentLyrics.length === 0)) {
+      // Edge case: saved but empty array
+      dom.lyricsDisplay.style.display = 'block';
+      dom.lyricsLines.innerHTML = '';
+      dom.btnClearLyrics.style.display = 'inline-flex';
+    } else {
+      // No lyrics
+      dom.lyricsEmpty.style.display = 'block';
+      dom.lyricsEmptyText.innerHTML = 'Play this track and click <strong>Record Lyrics</strong> to auto-generate';
+      dom.btnClearLyrics.style.display = 'none';
+    }
+  }
+
+  function updateLyricsDisplay(time) {
     if (!currentLyrics || currentLyrics.length === 0) return;
 
-    // Find the current lyric line by time
     var activeIdx = -1;
     for (var i = currentLyrics.length - 1; i >= 0; i--) {
-      if (time >= currentLyrics[i].time) {
-        activeIdx = i;
-        break;
-      }
+      if (time >= currentLyrics[i].time) { activeIdx = i; break; }
+    }
+    if (activeIdx === lastLyricIdx) return;
+    lastLyricIdx = activeIdx;
+
+    var lines = dom.lyricsLines.children;
+    for (var i = 0; i < lines.length; i++) {
+      lines[i].classList.remove('active', 'past');
+      if (i < activeIdx) lines[i].classList.add('past');
+      else if (i === activeIdx) lines[i].classList.add('active');
     }
 
-    if (activeIdx === lastActiveIdx) return;
+    // Scroll active into view
+    if (activeIdx >= 0 && lines[activeIdx]) {
+      lines[activeIdx].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
 
-    var el = dom.lyricLineDynamic;
-    var newText = (activeIdx >= 0) ? currentLyrics[activeIdx].text : '';
+  // ═══════ SPEECH RECOGNITION (Web Speech API) ══════════════
 
-    if (lastActiveIdx === -1) {
-      // First lyric — just set it
-      el.textContent = newText;
-      el.classList.remove('fading', 'entering');
+  var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  var recognition = null;
+  var recStartTime = 0;
+  var recResults = [];
+
+  function initSpeechRecognition() {
+    if (!SpeechRecognition) {
+      showToast('Speech recognition not supported in this browser. Please use Chrome.', 'error');
+      return false;
+    }
+    if (!recognition) {
+      recognition = new SpeechRecognition();
+      recognition.lang = 'zh-CN';
+      recognition.interimResults = true;
+      recognition.continuous = true;
+      recognition.maxAlternatives = 1;
+
+      recognition.onresult = function (event) {
+        var interim = '';
+        var finalText = '';
+
+        for (var i = event.resultIndex; i < event.results.length; i++) {
+          var result = event.results[i];
+          if (result.isFinal) {
+            finalText += result[0].transcript;
+            // Save final result with timestamp
+            var elapsed = (Date.now() - recStartTime) / 1000;
+            recResults.push({ time: elapsed, text: result[0].transcript.trim() });
+          } else {
+            interim += result[0].transcript;
+          }
+        }
+
+        // Show interim in live display
+        if (interim) {
+          dom.recLive.textContent = interim;
+        }
+
+        // Show final results incrementally in the lyrics display
+        if (finalText && recResults.length > 0) {
+          dom.recLive.textContent = '';
+          // Render partial results
+          dom.lyricsLines.innerHTML = '';
+          for (var j = 0; j < recResults.length; j++) {
+            var line = document.createElement('p');
+            line.className = 'lyric-line';
+            line.textContent = recResults[j].text;
+            dom.lyricsLines.appendChild(line);
+          }
+          dom.lyricsRecording.style.display = 'none';
+          dom.lyricsDisplay.style.display = 'block';
+          dom.lyricsContainer.classList.remove('recording');
+          dom.lyricsEmpty.style.display = 'none';
+        }
+      };
+
+      recognition.onerror = function (event) {
+        if (event.error === 'no-speech') {
+          // Just keep listening quietly
+          return;
+        }
+        if (event.error === 'aborted') return;
+        showToast('Recognition error: ' + event.error, 'error');
+        stopRecording(false);
+      };
+
+      recognition.onend = function () {
+        // If we were still recording (not stopped by user), restart
+        if (recognition.running) {
+          try { recognition.start(); } catch (e) {}
+        }
+      };
+    }
+    return true;
+  }
+
+  function startRecording() {
+    if (!initSpeechRecognition()) return;
+
+    // Reset
+    recResults = [];
+    recStartTime = Date.now();
+    lastLyricIdx = -1;
+    dom.lyricsLines.innerHTML = '';
+
+    // UI state
+    dom.lyricsEmpty.style.display = 'none';
+    dom.lyricsDisplay.style.display = 'none';
+    dom.lyricsRecording.style.display = 'flex';
+    dom.lyricsContainer.classList.add('recording');
+    dom.recLive.textContent = '';
+    dom.btnRecordLyrics.classList.add('recording');
+    dom.btnRecordLyrics.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><rect x="6" y="4" width="12" height="16" rx="2"/></svg> Stop Recording';
+    dom.btnClearLyrics.style.display = 'none';
+
+    // Start recognition
+    recognition.running = true;
+    try { recognition.start(); } catch (e) {}
+    showToast('Recording lyrics — sing or speak into your microphone');
+  }
+
+  function stopRecording(save) {
+    if (!recognition) return;
+    recognition.running = false;
+    try { recognition.stop(); } catch (e) {}
+
+    dom.btnRecordLyrics.classList.remove('recording');
+    dom.btnRecordLyrics.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><circle cx="12" cy="12" r="6"/><path d="M12 18v4M8 22h8" stroke="currentColor" stroke-width="2" fill="none"/></svg> Record Lyrics';
+    dom.lyricsRecording.style.display = 'none';
+    dom.lyricsContainer.classList.remove('recording');
+    dom.recLive.textContent = '';
+
+    if (save && recResults.length > 0) {
+      var track = PLAYLIST[state.currentIndex];
+      saveLyrics(track.title, recResults);
+      currentLyrics = recResults;
+      renderLyricsUI();
+      showToast('Lyrics saved for ' + track.title + ' (' + recResults.length + ' lines)');
+    } else if (!save || recResults.length === 0) {
+      renderLyricsUI();
+    }
+  }
+
+  function toggleRecording() {
+    if (recognition && recognition.running) {
+      stopRecording(true);
     } else {
-      // Crossfade: fade out → change text → fade in
-      el.classList.add('fading');
-      el.classList.remove('entering');
-
-      if (lyricsTimeout) clearTimeout(lyricsTimeout);
-      lyricsTimeout = setTimeout(function () {
-        el.textContent = newText;
-        el.classList.remove('fading');
-        el.classList.add('entering');
-        // Force reflow, then animate in
-        void el.offsetWidth;
-        el.classList.remove('entering');
-        el.classList.add('fading');
-        void el.offsetWidth;
-        el.classList.remove('fading');
-      }, 400);
+      startRecording();
     }
+  }
 
-    lastActiveIdx = activeIdx;
+  function clearLyricsForTrack() {
+    var track = PLAYLIST[state.currentIndex];
+    deleteLyrics(track.title);
+    currentLyrics = null;
+    lastLyricIdx = -1;
+    renderLyricsUI();
+    showToast('Lyrics cleared for ' + track.title);
   }
 
   // ═══════ PLAYER METHODS ════════════════════════════════════
@@ -411,12 +502,11 @@
     dom.timeDuration.textContent = '...';
     dom.progressBar.value = 0;
 
-    // Show COVER credit in artist line
     var credit = COVER_CREDITS[track.title];
     dom.trackArtist.textContent = credit ? 'C.Sole · COVER ' + credit : 'C.Sole';
 
-    // Load lyrics
-    setLyrics(track.title);
+    // Load lyrics from localStorage
+    loadLyricsForTrack();
 
     audio.src = track.src;
     audio.load();
@@ -475,12 +565,8 @@
 
   function toggleShuffle() {
     state.isShuffled = !state.isShuffled;
-    if (state.isShuffled) {
-      state.shuffleHistory = [];
-      dom.btnShuffle.classList.add('shuffle-on');
-    } else {
-      dom.btnShuffle.classList.remove('shuffle-on');
-    }
+    if (state.isShuffled) { state.shuffleHistory = []; dom.btnShuffle.classList.add('shuffle-on'); }
+    else { dom.btnShuffle.classList.remove('shuffle-on'); }
   }
 
   function toggleRepeat() {
@@ -527,7 +613,7 @@
     dom.progressBar.max = state.duration || 100;
     dom.timeCurrent.textContent = formatTime(state.currentTime);
     if (state.duration > 0) dom.timeDuration.textContent = formatTime(state.duration);
-    updateLyrics(state.currentTime);
+    updateLyricsDisplay(state.currentTime);
   }
 
   function renderPlaylist() {
@@ -540,7 +626,6 @@
       li.setAttribute('aria-label', 'Play ' + track.title);
       if (index === state.currentIndex) li.classList.add('playlist-item--active');
 
-      // Track number or playing indicator
       var numSpan = document.createElement('span');
       numSpan.className = 'track-num';
       if (index === state.currentIndex && state.isPlaying) {
@@ -551,13 +636,11 @@
         numSpan.textContent = index + 1;
       }
 
-      // Track name with COVER credit
       var nameSpan = document.createElement('span');
       nameSpan.className = 'track-name';
       var credit = COVER_CREDITS[track.title];
       nameSpan.textContent = credit ? track.title + ' (COVER ' + credit + ')' : track.title;
 
-      // Duration
       var durSpan = document.createElement('span');
       durSpan.className = 'track-duration';
       durSpan.setAttribute('data-index', index);
@@ -567,13 +650,8 @@
       li.appendChild(durSpan);
 
       li.addEventListener('click', function () {
-        if (index === state.currentIndex) {
-          audio.currentTime = 0; play();
-        } else {
-          state.shuffleHistory.push(state.currentIndex);
-          loadTrack(index);
-          setTimeout(function () { play(); }, 80);
-        }
+        if (index === state.currentIndex) { audio.currentTime = 0; play(); }
+        else { state.shuffleHistory.push(state.currentIndex); loadTrack(index); setTimeout(function () { play(); }, 80); }
       });
       li.addEventListener('keydown', function (e) {
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); li.click(); }
@@ -625,6 +703,9 @@
   });
 
   audio.addEventListener('ended', function () {
+    // If recording, stop and save
+    if (recognition && recognition.running) stopRecording(true);
+
     if (state.repeatMode === 'one') { audio.currentTime = 0; play(); }
     else if (state.repeatMode === 'all') { next(); }
     else {
@@ -662,6 +743,8 @@
   dom.volumeSlider.addEventListener('input', function () { setVolume(parseInt(dom.volumeSlider.value, 10) / 100); });
   dom.btnShuffle.addEventListener('click', toggleShuffle);
   dom.btnRepeat.addEventListener('click', toggleRepeat);
+  dom.btnRecordLyrics.addEventListener('click', toggleRecording);
+  dom.btnClearLyrics.addEventListener('click', clearLyricsForTrack);
 
   // ═══════ INIT ═════════════════════════════════════════════
 

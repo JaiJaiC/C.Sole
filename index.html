@@ -182,10 +182,30 @@
       <section class="lyrics-section" aria-label="Lyrics">
         <h2 class="section-heading">Lyrics</h2>
         <div class="lyrics-container" id="lyrics-container">
-          <p class="lyrics-placeholder" id="lyrics-placeholder">Select a track and press play</p>
-          <div class="lyrics-dynamic" id="lyrics-dynamic" style="display:none">
-            <p class="lyric-line-dynamic" id="lyric-line-dynamic"></p>
+          <!-- No saved lyrics yet -->
+          <div class="lyrics-empty" id="lyrics-empty">
+            <p class="lyrics-empty-text" id="lyrics-empty-text">Play a track and click <strong>Record Lyrics</strong> to auto-generate</p>
           </div>
+          <!-- Saved/displayed lyrics -->
+          <div class="lyrics-display" id="lyrics-display" style="display:none">
+            <div class="lyrics-lines" id="lyrics-lines"></div>
+          </div>
+          <!-- Recording indicator -->
+          <div class="lyrics-recording" id="lyrics-recording" style="display:none">
+            <span class="rec-dot" aria-hidden="true"></span>
+            <span class="rec-text">Recording — sing or speak the lyrics...</span>
+            <p class="rec-live" id="rec-live"></p>
+          </div>
+        </div>
+        <!-- Record button row -->
+        <div class="lyrics-actions">
+          <button class="lyrics-btn lyrics-btn--record" id="btn-record-lyrics" title="Record lyrics via microphone">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><circle cx="12" cy="12" r="6"/><path d="M12 18v4M8 22h8" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+            Record Lyrics
+          </button>
+          <button class="lyrics-btn lyrics-btn--clear" id="btn-clear-lyrics" title="Clear saved lyrics for this track" style="display:none">
+            Clear
+          </button>
         </div>
       </section>
 
