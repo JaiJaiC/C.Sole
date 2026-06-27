@@ -101,7 +101,7 @@
   // ─── Player State ─────────────────────────────────────────
   var saved = loadState();
   var state = {
-    currentIndex:   saved.currentIndex || 0,
+    currentIndex:   0,  // Always start from first track
     isPlaying:      false,
     currentTime:    0,
     duration:       0,
@@ -361,7 +361,7 @@
   }
 
   function persistState() {
-    saveState({ currentIndex: state.currentIndex, volume: state.volume });
+    saveState({ volume: state.volume });
   }
 
   // ═══════ UI RENDERING ══════════════════════════════════════
