@@ -189,6 +189,8 @@
   }
 
   // ═══════ SPECTRUM VISUALIZER ══════════════════════════════
+  var isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+
   function initSpectrum() {
     var canvas = dom.spectrumCanvas;
     if (!canvas) return;
@@ -202,13 +204,22 @@
     resize();
     window.addEventListener('resize', resize);
 
-    function draw() {
+    var lastDraw = 0;
+    var throttleMs = isMobile ? 50 : 16; // ~20fps mobile, ~60fps desktop
+
+    function draw(timestamp) {
+      if (timestamp - lastDraw < throttleMs) {
+        requestAnimationFrame(draw);
+        return;
+      }
+      lastDraw = timestamp;
+
       ctx.clearRect(0, 0, w, h);
       if (!analyser) { drawIdleWave(ctx, w, h); requestAnimationFrame(draw); return; }
       var bufferLength = analyser.frequencyBinCount;
       var dataArray = new Uint8Array(bufferLength);
       analyser.getByteFrequencyData(dataArray);
-      var barCount = 64;
+      var barCount = isMobile ? 32 : 64;
       var step = Math.floor(bufferLength / barCount);
       var barWidth = (w / barCount) * 0.75;
       var gap = (w / barCount) * 0.25;
