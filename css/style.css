@@ -139,6 +139,16 @@ body {
   position: relative;
 }
 
+/* Transparent bridge — prevents gap between parent and submenu */
+.nav-dropdown::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 6px;
+}
+
 .nav-dropdown-btn {
   display: flex;
   align-items: center;
@@ -173,7 +183,7 @@ body {
   min-width: 150px;
   padding: 6px 0;
   list-style: none;
-  margin: 4px 0 0;
+  margin: 0;
   background: rgba(30, 30, 30, 0.96);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -181,7 +191,7 @@ body {
   border-radius: 10px;
   opacity: 0;
   visibility: hidden;
-  transform: translateX(-50%) translateY(-6px);
+  transform: translateX(-50%);
   transition: all 0.2s ease;
   pointer-events: none;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
