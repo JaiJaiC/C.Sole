@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Art Portfolio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=777">
+</head>
+<body class="has-nav">
+
+    <!-- ─── Top Navigation ─── -->
+    <nav class="site-nav" aria-label="Main navigation">
+        <a href="../" class="nav-logo">C.Sole</a>
+        <ul class="nav-links">
+            <li class="nav-dropdown">
+                <a href="../">Music <span class="dropdown-arrow">▾</span></a>
+                <ul class="nav-submenu">
+                    <li><a href="https://jaijaic.site/ServoPiaBot/" target="_blank" rel="noopener">ServoPiaBot</a></li>
+                </ul>
+            </li>
+            <li><a href="./" class="nav-active">Draw</a></li>
+            <li><a href="../photography/">Photography</a></li>
+            <li><a href="../thinking/">Thinking</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero -->
+    <header class="hero">
+        <h1 class="hero-title">Art Portfolio</h1>
+        <p class="hero-subtitle">Drawings &amp; Sketches</p>
+        <div class="hero-line"></div>
+    </header>
+
+    <!-- Draw Section -->
+    <section class="portfolio-section" id="section-draw">
+        <h2 class="section-title">Draw</h2>
+        <div class="masonry" id="gallery-draw"></div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <p>&copy; 2026 Art Portfolio. All rights reserved.</p>
+    </footer>
+
+    <!-- Fullscreen Lightbox -->
+    <div id="lightbox" class="lightbox">
+        <button id="lightbox-close" class="lightbox-close" aria-label="Close">&times;</button>
+        <button id="lightbox-prev" class="lightbox-arrow lightbox-prev" aria-label="Previous">&lsaquo;</button>
+        <img id="lightbox-img" src="" alt="">
+        <button id="lightbox-next" class="lightbox-arrow lightbox-next" aria-label="Next">&rsaquo;</button>
+        <div id="lightbox-counter" class="lightbox-counter"></div>
+    </div>
+
+    <script src="script.js?v=777"></script>
+</body>
+</html>

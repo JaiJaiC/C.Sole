@@ -17,7 +17,23 @@
   <link rel="stylesheet" href="css/style.css">
   <script src="js/main.js" defer></script>
 </head>
-<body>
+<body class="has-nav">
+
+  <!-- ─── Top Navigation ─── -->
+  <nav class="site-nav" aria-label="Main navigation">
+    <a href="/" class="nav-logo" aria-label="C.Sole home">C.Sole</a>
+    <ul class="nav-links">
+      <li class="nav-dropdown">
+        <a href="/" class="nav-active">Music <span class="dropdown-arrow">▾</span></a>
+        <ul class="nav-submenu">
+          <li><a href="https://jaijaic.site/ServoPiaBot/" target="_blank" rel="noopener">ServoPiaBot</a></li>
+        </ul>
+      </li>
+      <li><a href="artportfolio/">Draw</a></li>
+      <li><a href="photography/">Photography</a></li>
+      <li><a href="thinking/">Thinking</a></li>
+    </ul>
+  </nav>
 
   <!-- Notes Rain Background -->
   <canvas id="notes-rain" aria-hidden="true"></canvas>
