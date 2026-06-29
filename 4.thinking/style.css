@@ -117,13 +117,6 @@ body {
   align-items: center;
   gap: 4px;
 }
-.dropdown-arrow {
-  font-size: 0.6rem;
-  transition: transform 0.2s ease;
-  opacity: 0.5;
-}
-.nav-dropdown:hover .dropdown-arrow { transform: rotate(180deg); }
-
 .nav-submenu {
   position: absolute;
   top: 100%;

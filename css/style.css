@@ -165,15 +165,6 @@ body {
   background: var(--color-accent-dim);
 }
 
-.dropdown-arrow {
-  font-size: 0.6rem;
-  transition: transform 0.2s ease;
-  opacity: 0.5;
-}
-.nav-dropdown:hover .dropdown-arrow {
-  transform: rotate(180deg);
-}
-
 .nav-submenu {
   position: absolute;
   top: 100%;
@@ -277,21 +268,13 @@ body.has-nav {
   gap: 0.8rem;
 }
 
-.hero-logo-img {
-  width: clamp(180px, 38vw, 280px);
-  height: clamp(180px, 38vw, 280px);
-  border-radius: 50%;
-  object-fit: cover;
-  display: block;
-  border: 2px solid rgba(232, 168, 80, 0.35);
-  box-shadow: 0 0 60px rgba(232, 168, 80, 0.2), 0 0 120px rgba(232, 168, 80, 0.08);
-  animation: hero-portrait-pulse 3s ease-in-out infinite;
-  transition: border-color 0.5s ease, box-shadow 0.5s ease;
-}
-
-@keyframes hero-portrait-pulse {
-  0%, 100% { box-shadow: 0 0 60px rgba(232, 168, 80, 0.2), 0 0 120px rgba(232, 168, 80, 0.08); }
-  50%      { box-shadow: 0 0 80px rgba(232, 168, 80, 0.35), 0 0 160px rgba(232, 168, 80, 0.15); }
+.hero-logo {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 8vw, 5.5rem);
+  font-weight: 600;
+  color: var(--color-accent);
+  letter-spacing: 0.06em;
+  user-select: none;
 }
 
 .hero-subtitle {
@@ -765,10 +748,7 @@ body.has-nav {
     width: clamp(110px, 45vw, 160px) !important;
     height: clamp(110px, 45vw, 160px) !important;
   }
-  .hero-logo-img {
-    width: clamp(130px, 48vw, 200px) !important;
-    height: clamp(130px, 48vw, 200px) !important;
-  }
+  .hero-logo { font-size: clamp(2.5rem, 10vw, 3.5rem); }
 
   .hero-glow-disc { display: none; }
   .player-card, .playlist {
