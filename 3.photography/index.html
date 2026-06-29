@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photography · C.Sole</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="has-nav">
+
+    <!-- ─── Top Navigation ─── -->
+    <nav class="site-nav" aria-label="Main navigation">
+        <a href="/" class="nav-logo"><img src="../logo/我的自画像.jpg" alt="C.Sole" class="nav-logo-img"></a>
+        <ul class="nav-links">
+            <li class="nav-dropdown">
+                <button type="button" class="nav-dropdown-btn">Music <span class="dropdown-arrow">▾</span></button>
+                <ul class="nav-submenu">
+                    <li><a href="https://jaijaic.site/ServoPiaBot/" target="_blank" rel="noopener">ServoPiaBot</a></li>
+                </ul>
+            </li>
+            <li><a href="../2.draw/">Draw</a></li>
+            <li><a href="./" class="nav-active">Photography</a></li>
+            <li><a href="../4.thinking/">Thinking</a></li>
+            <li class="nav-theme-toggle">
+                <button type="button" id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme" title="Toggle light/dark mode">
+                    <span class="theme-icon-light">☀️</span>
+                    <span class="theme-icon-dark">🌙</span>
+                </button>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Hero -->
+    <header class="hero">
+        <h1 class="hero-title">Photography</h1>
+        <p class="hero-subtitle">Landscapes &amp; Moments</p>
+        <div class="hero-line"></div>
+    </header>
+
+    <!-- Landscape Section -->
+    <section class="portfolio-section" id="section-landscape">
+        <h2 class="section-title">Landscape</h2>
+        <div class="masonry" id="gallery-landscape"></div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <p>&copy; 2026 C.Sole. All rights reserved.</p>
+    </footer>
+
+    <!-- Fullscreen Lightbox -->
+    <div id="lightbox" class="lightbox">
+        <button id="lightbox-close" class="lightbox-close" aria-label="Close">&times;</button>
+        <button id="lightbox-prev" class="lightbox-arrow lightbox-prev" aria-label="Previous">&lsaquo;</button>
+        <img id="lightbox-img" src="" alt="">
+        <button id="lightbox-next" class="lightbox-arrow lightbox-next" aria-label="Next">&rsaquo;</button>
+        <div id="lightbox-counter" class="lightbox-counter"></div>
+    </div>
+
+    <script src="../js/theme.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

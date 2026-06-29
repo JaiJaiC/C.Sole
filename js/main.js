@@ -22,13 +22,13 @@
     {
       title: '我是真的爱上你',
       artist: 'C.Sole',
-      src: 'mp3/我是真的爱上你.mp3',
+      src: '1.music/我是真的爱上你.mp3',
       cover: COVERS['我是真的爱上你']
     },
     {
       title: '夜空中最亮的星',
       artist: 'C.Sole',
-      src: 'mp3/夜空中最亮的星.mp3',
+      src: '1.music/夜空中最亮的星.mp3',
       cover: COVERS['夜空中最亮的星']
     }
   ];
