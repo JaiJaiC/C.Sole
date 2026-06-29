@@ -63,15 +63,25 @@ body {
 }
 
 .nav-logo {
-  font-family: var(--font-display);
-  font-size: 1.15rem;
-  font-weight: 600;
-  color: var(--color-accent);
+  display: flex;
+  align-items: center;
   text-decoration: none;
-  letter-spacing: 0.04em;
   transition: opacity 0.15s ease;
 }
 .nav-logo:hover { opacity: 0.8; }
+
+.nav-logo-img {
+  height: 34px;
+  width: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  border: 1.5px solid rgba(232, 168, 80, 0.3);
+  transition: border-color 0.15s ease;
+}
+.nav-logo:hover .nav-logo-img {
+  border-color: var(--color-accent);
+}
 
 .nav-links {
   display: flex;

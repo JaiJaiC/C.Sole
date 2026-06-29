@@ -34,15 +34,23 @@ body {
 }
 
 .nav-logo {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.15rem;
-  font-weight: 600;
-  color: #222;
+  display: flex;
+  align-items: center;
   text-decoration: none;
-  letter-spacing: 0.04em;
   transition: opacity 0.15s ease;
 }
-.nav-logo:hover { opacity: 0.7; }
+.nav-logo:hover { opacity: 0.8; }
+
+.nav-logo-img {
+  height: 34px;
+  width: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  border: 1.5px solid rgba(0, 0, 0, 0.15);
+  transition: border-color 0.15s ease;
+}
+.nav-logo:hover .nav-logo-img { border-color: #222; }
 
 .nav-links {
   display: flex;
