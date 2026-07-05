@@ -14,7 +14,8 @@
   // ─── Song Covers ──────────────────────────────────────────
   var COVERS = {
     '我是真的爱上你': 'img/cover-love.svg',
-    '夜空中最亮的星': 'img/cover-stars.svg'
+    '夜空中最亮的星': 'img/cover-stars.svg',
+    '无名的人': 'img/cover-placeholder.svg'
   };
 
   // ─── Playlist Data ────────────────────────────────────────
@@ -30,6 +31,12 @@
       artist: 'C.Sole',
       src: '1.music/夜空中最亮的星.mp3',
       cover: COVERS['夜空中最亮的星']
+    },
+    {
+      title: '无名的人',
+      artist: 'C.Sole',
+      src: '1.music/无名的人.mp3',
+      cover: COVERS['无名的人']
     }
   ];
 

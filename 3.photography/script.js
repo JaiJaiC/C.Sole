@@ -33,11 +33,40 @@ function shuffle(arr) {
     return a;
 }
 
-function getRandomIndices() {
+// Round-robin queue — avoids duplicate images across rotations
+var _shuffledQueue = [];
+
+function refillQueue() {
     var all = [];
     for (var i = 0; i < TOTAL_IMAGES; i++) all.push(i);
-    return shuffle(all).slice(0, CARDS_PER_GROUP);
+    _shuffledQueue = shuffle(all);
 }
+
+function getRandomIndices() {
+    if (_shuffledQueue.length < CARDS_PER_GROUP) {
+        // Take whatever remains, then refill and take the rest (no duplicates)
+        var remaining = _shuffledQueue.slice();
+        refillQueue();
+        // Remove indices already taken in this batch from the fresh queue
+        var seen = {};
+        for (var r = 0; r < remaining.length; r++) seen[remaining[r]] = true;
+        var fresh = [];
+        for (var f = 0; f < _shuffledQueue.length; f++) {
+            if (!seen[_shuffledQueue[f]]) fresh.push(_shuffledQueue[f]);
+        }
+        _shuffledQueue = fresh;
+        var needed = CARDS_PER_GROUP - remaining.length;
+        var batch = remaining.concat(_shuffledQueue.slice(0, needed));
+        _shuffledQueue = _shuffledQueue.slice(needed);
+        return batch;
+    }
+    var batch = _shuffledQueue.slice(0, CARDS_PER_GROUP);
+    _shuffledQueue = _shuffledQueue.slice(CARDS_PER_GROUP);
+    return batch;
+}
+
+// Pre-fill the queue on load
+refillQueue();
 
 // ---------- Create cards ----------
 function createCards() {
