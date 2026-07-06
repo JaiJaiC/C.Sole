@@ -198,7 +198,8 @@ body {
 }
 
 .nav-dropdown:hover .nav-submenu,
-.nav-dropdown:focus-within .nav-submenu {
+.nav-dropdown:focus-within .nav-submenu,
+.nav-dropdown.dropdown-open .nav-submenu {
   opacity: 1;
   visibility: visible;
   transform: translateX(-50%) translateY(0);

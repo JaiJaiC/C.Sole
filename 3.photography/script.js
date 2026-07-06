@@ -116,35 +116,41 @@ function updateGallery() {
 function createPortraitCards() {
     var fragment = document.createDocumentFragment();
     for (var i = 0; i < PORTRAIT_IDS.length; i++) {
-        var card = document.createElement('div');
-        card.className = 'img-card';
-        card.dataset.index = i;
+        (function (idx) {
+            var card = document.createElement('div');
+            card.className = 'img-card';
+            card.dataset.index = idx;
 
-        var img = document.createElement('img');
-        img.className = 'gallery-img';
-        img.alt = 'Portrait ' + (i + 1);
+            var img = document.createElement('img');
+            img.className = 'gallery-img';
+            img.alt = 'Portrait ' + (idx + 1);
 
-        var src = portraitBase + PORTRAIT_IDS[i] + (PORTRAIT_IDS[i] === 1 ? '.jpg' : '.JPG');
-        img.src = src;
-        img.dataset.src = src;
-        card.dataset.src = src;
+            var src = portraitBase + PORTRAIT_IDS[idx] + (PORTRAIT_IDS[idx] === 1 ? '.jpg' : '.JPG');
+            img.src = src;
+            img.dataset.src = src;
+            card.dataset.src = src;
 
-        // Reveal on load
-        if (img.complete) {
-            img.classList.add('loaded');
-        } else {
-            img.addEventListener('load', function () { img.classList.add('loaded'); });
-        }
+            // Use 'this' to avoid closure bug
+            img.addEventListener('load', function () { this.classList.add('loaded'); });
+            img.addEventListener('error', function () { this.classList.add('loaded'); });
 
-        fragment.appendChild(card);
+            fragment.appendChild(card);
+        })(i);
     }
     galleryPortrait.appendChild(fragment);
 
-    // Preload portrait images
-    PORTRAIT_IDS.forEach(function (id) {
-        var pre = new Image();
-        pre.src = portraitBase + id + (id === 1 ? '.jpg' : '.JPG');
-    });
+    // Fallback: force reveal after images have time to load
+    setTimeout(function () {
+        var imgs = galleryPortrait.querySelectorAll('.gallery-img');
+        imgs.forEach(function (img) {
+            if (img.complete || img.naturalWidth > 0) img.classList.add('loaded');
+        });
+    }, 2000);
+    // Second fallback even later
+    setTimeout(function () {
+        var imgs = galleryPortrait.querySelectorAll('.gallery-img');
+        imgs.forEach(function (img) { img.classList.add('loaded'); });
+    }, 5000);
 }
 
 // ---------- Password Gate ----------
@@ -289,3 +295,28 @@ function init() {
 }
 
 window.addEventListener('DOMContentLoaded', init);
+
+// ─── Mobile dropdown toggle ─────────────────────────
+(function () {
+  if (window.innerWidth > 640) return;
+  var dropdowns = document.querySelectorAll('.nav-dropdown');
+  dropdowns.forEach(function (dd) {
+    var trigger = dd.querySelector(':scope > a');
+    if (!trigger) return;
+    trigger.addEventListener('click', function (e) {
+      if (dd.classList.contains('dropdown-open')) {
+        dd.classList.remove('dropdown-open');
+        return; // second tap: navigate
+      }
+      e.preventDefault();
+      e.stopPropagation();
+      dropdowns.forEach(function (d) { d.classList.remove('dropdown-open'); });
+      dd.classList.add('dropdown-open');
+    });
+  });
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.nav-dropdown')) {
+      dropdowns.forEach(function (d) { d.classList.remove('dropdown-open'); });
+    }
+  });
+})();

@@ -144,7 +144,8 @@ body {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 .nav-dropdown:hover .nav-submenu,
-.nav-dropdown:focus-within .nav-submenu {
+.nav-dropdown:focus-within .nav-submenu,
+.nav-dropdown.dropdown-open .nav-submenu {
   opacity: 1;
   visibility: visible;
   transform: translateX(-50%) translateY(0);

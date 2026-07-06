@@ -592,4 +592,29 @@
 
   init();
 
+  // ─── Mobile dropdown toggle ─────────────────────────
+  (function () {
+    if (window.innerWidth > 500) return;
+    var dropdowns = document.querySelectorAll('.nav-dropdown');
+    dropdowns.forEach(function (dd) {
+      var trigger = dd.querySelector(':scope > a');
+      if (!trigger) return;
+      trigger.addEventListener('click', function (e) {
+        if (dd.classList.contains('dropdown-open')) {
+          dd.classList.remove('dropdown-open');
+          return;
+        }
+        e.preventDefault();
+        e.stopPropagation();
+        dropdowns.forEach(function (d) { d.classList.remove('dropdown-open'); });
+        dd.classList.add('dropdown-open');
+      });
+    });
+    document.addEventListener('click', function (e) {
+      if (!e.target.closest('.nav-dropdown')) {
+        dropdowns.forEach(function (d) { d.classList.remove('dropdown-open'); });
+      }
+    });
+  })();
+
 })();
