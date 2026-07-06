@@ -181,13 +181,17 @@ function checkPassword() {
 function unlockPortrait() {
     portraitGate.style.display = 'none';
     galleryPortrait.style.display = 'block';
-    // Ensure images are visible after display change
-    setTimeout(function () {
-        var imgs = galleryPortrait.querySelectorAll('.gallery-img');
-        imgs.forEach(function (img) {
-            if (img.complete) img.classList.add('loaded');
-        });
-    }, 200);
+
+    // Force-reload images — they didn't load while display:none
+    var imgs = galleryPortrait.querySelectorAll('.gallery-img');
+    imgs.forEach(function (img) {
+        var src = img.dataset.src;
+        if (src && !img.complete) {
+            img.src = '';  // reset
+            img.src = src; // reload
+        }
+        img.classList.add('loaded');
+    });
 }
 
 // ---------- Lightbox ----------

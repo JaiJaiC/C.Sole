@@ -345,15 +345,11 @@ body.has-nav { padding-top: 52px; }
 
 /* ═══════ RESPONSIVE ═══════ */
 @media (max-width: 500px) {
-  .site-nav {
-    padding: 0 1rem;
-    height: 46px;
-  }
-  .nav-logo { font-size: 1rem; }
-  .nav-links a {
-    padding: 5px 10px;
-    font-size: 0.8rem;
-  }
+  .site-nav { padding: 0 0.5rem; height: 46px; }
+  .nav-links { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; mask-image: linear-gradient(to right, black 90%, transparent 98%); -webkit-mask-image: linear-gradient(to right, black 90%, transparent 98%); }
+  .nav-links::-webkit-scrollbar { display: none; }
+  .nav-links a { padding: 5px 10px; font-size: 0.8rem; white-space: nowrap; flex-shrink: 0; }
+  .nav-logo-img { height: 28px; width: 28px; flex-shrink: 0; }
   body.has-nav { padding-top: 46px; }
 
   .hero { padding: 6vh 1.5rem 3vh; }
