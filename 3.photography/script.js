@@ -181,17 +181,8 @@ function checkPassword() {
 function unlockPortrait() {
     portraitGate.style.display = 'none';
     galleryPortrait.style.display = 'block';
-
-    // Force-reload images — they didn't load while display:none
-    var imgs = galleryPortrait.querySelectorAll('.gallery-img');
-    imgs.forEach(function (img) {
-        var src = img.dataset.src;
-        if (src && !img.complete) {
-            img.src = '';  // reset
-            img.src = src; // reload
-        }
-        img.classList.add('loaded');
-    });
+    // Create cards now — images load because container is visible
+    createPortraitCards();
 }
 
 // ---------- Lightbox ----------
@@ -292,7 +283,6 @@ function init() {
     updateGallery();
     setInterval(updateGallery, SWITCH_INTERVAL);
 
-    createPortraitCards();
     initPortraitGate();
 
     bindEvents();
