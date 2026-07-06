@@ -116,41 +116,26 @@ function updateGallery() {
 function createPortraitCards() {
     var fragment = document.createDocumentFragment();
     for (var i = 0; i < PORTRAIT_IDS.length; i++) {
-        (function (idx) {
-            var card = document.createElement('div');
-            card.className = 'img-card';
-            card.dataset.index = idx;
+        var card = document.createElement('div');
+        card.className = 'img-card';
+        card.dataset.index = i;
 
-            var img = document.createElement('img');
-            img.className = 'gallery-img';
-            img.alt = 'Portrait ' + (idx + 1);
+        var img = document.createElement('img');
+        img.className = 'gallery-img';
+        img.alt = 'Portrait ' + (i + 1);
 
-            var src = portraitBase + PORTRAIT_IDS[idx] + (PORTRAIT_IDS[idx] === 1 ? '.jpg' : '.JPG');
-            img.src = src;
-            img.dataset.src = src;
-            card.dataset.src = src;
+        var src = portraitBase + PORTRAIT_IDS[i] + (PORTRAIT_IDS[i] === 1 ? '.jpg' : '.JPG');
+        img.dataset.src = src;
+        card.dataset.src = src;
 
-            // Use 'this' to avoid closure bug
-            img.addEventListener('load', function () { this.classList.add('loaded'); });
-            img.addEventListener('error', function () { this.classList.add('loaded'); });
+        // Set src AFTER adding listener to avoid cached-image race
+        img.addEventListener('load', function () { this.classList.add('loaded'); });
+        img.addEventListener('error', function () { this.classList.add('loaded'); });
+        img.src = src;
 
-            fragment.appendChild(card);
-        })(i);
+        fragment.appendChild(card);
     }
     galleryPortrait.appendChild(fragment);
-
-    // Fallback: force reveal after images have time to load
-    setTimeout(function () {
-        var imgs = galleryPortrait.querySelectorAll('.gallery-img');
-        imgs.forEach(function (img) {
-            if (img.complete || img.naturalWidth > 0) img.classList.add('loaded');
-        });
-    }, 2000);
-    // Second fallback even later
-    setTimeout(function () {
-        var imgs = galleryPortrait.querySelectorAll('.gallery-img');
-        imgs.forEach(function (img) { img.classList.add('loaded'); });
-    }, 5000);
 }
 
 // ---------- Password Gate ----------
@@ -164,7 +149,6 @@ function initPortraitGate() {
         }
     });
 
-    // Clear error on typing
     portraitInput.addEventListener('input', function () {
         portraitError.classList.remove('show');
         portraitInput.classList.remove('shake');
@@ -186,9 +170,7 @@ function checkPassword() {
 
 function unlockPortrait() {
     portraitGate.style.display = 'none';
-    galleryPortrait.style.display = 'block';
-    // Create cards now — images load because container is visible
-    createPortraitCards();
+    galleryPortrait.style.visibility = 'visible';
 }
 
 // ---------- Lightbox ----------
@@ -289,6 +271,7 @@ function init() {
     updateGallery();
     setInterval(updateGallery, SWITCH_INTERVAL);
 
+    createPortraitCards();   // images load: gallery is visibility:hidden (not display:none)
     initPortraitGate();
 
     bindEvents();
