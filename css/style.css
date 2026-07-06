@@ -231,18 +231,10 @@ body.has-nav {
     padding: 0 var(--space-sm);
     height: 46px;
   }
-  .nav-links {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    mask-image: linear-gradient(to right, black 90%, transparent 98%);
-    -webkit-mask-image: linear-gradient(to right, black 90%, transparent 98%);
-  }
-  .nav-links::-webkit-scrollbar { display: none; }
+  .nav-links { flex-wrap: nowrap; }
   .nav-links a {
-    padding: 5px 10px;
-    font-size: 0.8rem;
+    padding: 5px;
+    font-size: 0.76rem;
     white-space: nowrap;
     flex-shrink: 0;
   }
