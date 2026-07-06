@@ -158,7 +158,7 @@ function initPortraitGate() {
     }
 
     portraitInput.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter') {
+        if (e.key === 'Enter' || e.keyCode === 13) {
             e.preventDefault();
             checkPassword();
         }
@@ -172,7 +172,7 @@ function initPortraitGate() {
 }
 
 function checkPassword() {
-    if (portraitInput.value === PORTRAIT_PASSWORD) {
+    if (portraitInput.value.toLowerCase() === PORTRAIT_PASSWORD) {
         sessionStorage.setItem('portrait-unlocked', 'true');
         unlockPortrait();
     } else {
@@ -187,7 +187,7 @@ function checkPassword() {
 
 function unlockPortrait() {
     portraitGate.classList.add('portrait-gate--unlocked');
-    galleryPortrait.style.display = '';
+    galleryPortrait.style.display = 'block';
     setTimeout(function () {
         portraitGate.style.display = 'none';
     }, 400);
