@@ -162,17 +162,22 @@ window.addEventListener('DOMContentLoaded', init);
       if (window.innerWidth > 640) return;
       if (dd.classList.contains('dropdown-open')) {
         dd.classList.remove('dropdown-open');
+        var nl = dd.closest('.nav-links'); if (nl) nl.style.overflow = '';
         return;
       }
       e.preventDefault();
       e.stopPropagation();
       dropdowns.forEach(function (d) { d.classList.remove('dropdown-open'); });
       dd.classList.add('dropdown-open');
+      var navLinks = dd.closest('.nav-links'); if (navLinks) navLinks.style.overflow = 'visible';
     });
   });
   document.addEventListener('click', function (e) {
     if (!e.target.closest('.nav-dropdown')) {
-      dropdowns.forEach(function (d) { d.classList.remove('dropdown-open'); });
+      dropdowns.forEach(function (d) {
+        d.classList.remove('dropdown-open');
+        var nl = d.closest('.nav-links'); if (nl) nl.style.overflow = '';
+      });
     }
   });
 })();
