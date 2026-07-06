@@ -10,10 +10,6 @@ var IMAGE_IDS = [1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 21, 22];
 var TOTAL_IMAGES = IMAGE_IDS.length; // 17
 var imageBase = 'landscape/';
 
-// ---------- Portrait images ----------
-var PORTRAIT_IDS = [1, 2, 3, 4];
-var portraitBase = 'portrait/';
-
 // ---------- DOM refs ----------
 var galleryLandscape = document.getElementById('gallery-landscape');
 var galleryPortrait = document.getElementById('gallery-portrait');
@@ -110,32 +106,6 @@ function updateGallery() {
             img.classList.add('loaded');
         }, 350);
     });
-}
-
-// ---------- Create portrait cards ----------
-function createPortraitCards() {
-    var fragment = document.createDocumentFragment();
-    for (var i = 0; i < PORTRAIT_IDS.length; i++) {
-        var card = document.createElement('div');
-        card.className = 'img-card';
-        card.dataset.index = i;
-
-        var img = document.createElement('img');
-        img.className = 'gallery-img';
-        img.alt = 'Portrait ' + (i + 1);
-
-        var src = portraitBase + PORTRAIT_IDS[i] + (PORTRAIT_IDS[i] === 1 ? '.jpg' : '.JPG');
-        img.dataset.src = src;
-        card.dataset.src = src;
-
-        // Set src AFTER adding listener to avoid cached-image race
-        img.addEventListener('load', function () { this.classList.add('loaded'); });
-        img.addEventListener('error', function () { this.classList.add('loaded'); });
-        img.src = src;
-
-        fragment.appendChild(card);
-    }
-    galleryPortrait.appendChild(fragment);
 }
 
 // ---------- Password Gate ----------
@@ -271,7 +241,6 @@ function init() {
     updateGallery();
     setInterval(updateGallery, SWITCH_INTERVAL);
 
-    createPortraitCards();   // images load: gallery is visibility:hidden (not display:none)
     initPortraitGate();
 
     bindEvents();
@@ -281,12 +250,12 @@ window.addEventListener('DOMContentLoaded', init);
 
 // ─── Mobile dropdown toggle ─────────────────────────
 (function () {
-  if (window.innerWidth > 640) return;
   var dropdowns = document.querySelectorAll('.nav-dropdown');
   dropdowns.forEach(function (dd) {
-    var trigger = dd.querySelector(':scope > a');
-    if (!trigger) return;
+    var trigger = dd.firstElementChild;
+    if (!trigger || (trigger.tagName !== 'A' && trigger.tagName !== 'BUTTON')) return;
     trigger.addEventListener('click', function (e) {
+      if (window.innerWidth > 640) return; // desktop: use hover
       if (dd.classList.contains('dropdown-open')) {
         dd.classList.remove('dropdown-open');
         return; // second tap: navigate

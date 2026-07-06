@@ -594,12 +594,12 @@
 
   // ─── Mobile dropdown toggle ─────────────────────────
   (function () {
-    if (window.innerWidth > 500) return;
     var dropdowns = document.querySelectorAll('.nav-dropdown');
     dropdowns.forEach(function (dd) {
-      var trigger = dd.querySelector(':scope > a');
-      if (!trigger) return;
+      var trigger = dd.firstElementChild;
+      if (!trigger || (trigger.tagName !== 'A' && trigger.tagName !== 'BUTTON')) return;
       trigger.addEventListener('click', function (e) {
+        if (window.innerWidth > 500) return;
         if (dd.classList.contains('dropdown-open')) {
           dd.classList.remove('dropdown-open');
           return;
