@@ -136,8 +136,8 @@
   'use strict';
 
   // ─── CONFIG ─────────────────────────────────────────────
-  var API_BASE = 'https://csole-tracker.YOUR_SUBDOMAIN.workers.dev';
-  // ^^^ Replace with actual Worker URL
+  var API_BASE = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
+  // ^^^ Replace with your Apps Script URL from step 5
 
   var gate       = document.getElementById('gate');
   var gateError  = document.getElementById('gate-error');
@@ -164,7 +164,7 @@
   });
 
   function fetchVisits() {
-    fetch(API_BASE + '/api/visits?pwd=' + encodeURIComponent(adminPwd))
+    fetch(API_BASE + '?action=visits&pwd=' + encodeURIComponent(adminPwd))
       .then(function (r) { return r.json(); })
       .then(function (data) {
         if (data.error) {

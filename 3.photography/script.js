@@ -179,11 +179,15 @@ function checkPassword() {
 }
 
 function unlockPortrait() {
-    portraitGate.classList.add('portrait-gate--unlocked');
+    portraitGate.style.display = 'none';
     galleryPortrait.style.display = 'block';
+    // Ensure images are visible after display change
     setTimeout(function () {
-        portraitGate.style.display = 'none';
-    }, 400);
+        var imgs = galleryPortrait.querySelectorAll('.gallery-img');
+        imgs.forEach(function (img) {
+            if (img.complete) img.classList.add('loaded');
+        });
+    }, 200);
 }
 
 // ---------- Lightbox ----------
