@@ -14,6 +14,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="style.css">
+  <script src="../js/tracker.js" defer></script>
 </head>
 <body class="has-nav">
 
@@ -95,16 +96,10 @@
       var thinkError = document.getElementById('think-error');
       var thoughtsContent = document.getElementById('thoughts-content');
 
-      if (sessionStorage.getItem('think-unlocked') === 'true') {
-        unlockThink();
-        return;
-      }
-
       thinkInput.addEventListener('keydown', function (e) {
         if (e.key === 'Enter' || e.keyCode === 13) {
           e.preventDefault();
           if (thinkInput.value.toLowerCase() === THINK_PASSWORD) {
-            sessionStorage.setItem('think-unlocked', 'true');
             unlockThink();
           } else {
             thinkError.classList.add('show');

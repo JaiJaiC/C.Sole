@@ -151,12 +151,6 @@ function createPortraitCards() {
 var PORTRAIT_PASSWORD = 'c';
 
 function initPortraitGate() {
-    // Check if already unlocked this session
-    if (sessionStorage.getItem('portrait-unlocked') === 'true') {
-        unlockPortrait();
-        return;
-    }
-
     portraitInput.addEventListener('keydown', function (e) {
         if (e.key === 'Enter' || e.keyCode === 13) {
             e.preventDefault();
@@ -173,7 +167,6 @@ function initPortraitGate() {
 
 function checkPassword() {
     if (portraitInput.value.toLowerCase() === PORTRAIT_PASSWORD) {
-        sessionStorage.setItem('portrait-unlocked', 'true');
         unlockPortrait();
     } else {
         portraitError.classList.add('show');
