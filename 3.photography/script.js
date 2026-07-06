@@ -1,17 +1,25 @@
 // ========================================
-// Photography Page — Landscape Gallery
+// Photography Page — Landscape + Portrait
 // ========================================
 
 var SWITCH_INTERVAL = 8000;
 var CARDS_PER_GROUP = 10;
 
-// Images in landscape/ folder: 1,2,4,5,6,7,8,9,10,11,12,13,14,16,17,21,22 (17 total)
+// ---------- Landscape images ----------
 var IMAGE_IDS = [1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 21, 22];
 var TOTAL_IMAGES = IMAGE_IDS.length; // 17
 var imageBase = 'landscape/';
 
+// ---------- Portrait images ----------
+var PORTRAIT_IDS = [1, 2, 3, 4];
+var portraitBase = 'portrait/';
+
 // ---------- DOM refs ----------
 var galleryLandscape = document.getElementById('gallery-landscape');
+var galleryPortrait = document.getElementById('gallery-portrait');
+var portraitGate = document.getElementById('portrait-gate');
+var portraitInput = document.getElementById('portrait-password');
+var portraitError = document.getElementById('portrait-error');
 var lightbox = document.getElementById('lightbox');
 var lightboxImg = document.getElementById('lightbox-img');
 var lightboxCounter = document.getElementById('lightbox-counter');
@@ -44,10 +52,8 @@ function refillQueue() {
 
 function getRandomIndices() {
     if (_shuffledQueue.length < CARDS_PER_GROUP) {
-        // Take whatever remains, then refill and take the rest (no duplicates)
         var remaining = _shuffledQueue.slice();
         refillQueue();
-        // Remove indices already taken in this batch from the fresh queue
         var seen = {};
         for (var r = 0; r < remaining.length; r++) seen[remaining[r]] = true;
         var fresh = [];
@@ -65,10 +71,9 @@ function getRandomIndices() {
     return batch;
 }
 
-// Pre-fill the queue on load
 refillQueue();
 
-// ---------- Create cards ----------
+// ---------- Create landscape cards ----------
 function createCards() {
     var fragment = document.createDocumentFragment();
     for (var i = 0; i < CARDS_PER_GROUP; i++) {
@@ -86,30 +91,123 @@ function createCards() {
     galleryLandscape.appendChild(fragment);
 }
 
-// ---------- Update gallery ----------
 function updateGallery() {
-    var cards = document.querySelectorAll('.img-card');
+    var cards = document.querySelectorAll('#gallery-landscape .img-card');
     var newIndices = getRandomIndices();
-    currentSrcs = newIndices.map(function (i) {
+    var srcs = newIndices.map(function (i) {
         return imageBase + IMAGE_IDS[i] + '.jpg';
     });
 
     cards.forEach(function (card, i) {
         var img = card.querySelector('.gallery-img');
-        var src = currentSrcs[i];
+        var src = srcs[i];
 
         img.classList.remove('loaded');
+        card.dataset.src = src;
         setTimeout(function () {
             img.src = src;
             img.dataset.src = src;
-            card.dataset.src = src;
             img.classList.add('loaded');
         }, 350);
     });
 }
 
+// ---------- Create portrait cards ----------
+function createPortraitCards() {
+    var fragment = document.createDocumentFragment();
+    for (var i = 0; i < PORTRAIT_IDS.length; i++) {
+        var card = document.createElement('div');
+        card.className = 'img-card';
+        card.dataset.index = i;
+
+        var img = document.createElement('img');
+        img.className = 'gallery-img';
+        img.alt = 'Portrait ' + (i + 1);
+
+        var src = portraitBase + PORTRAIT_IDS[i] + (PORTRAIT_IDS[i] === 1 ? '.jpg' : '.JPG');
+        img.src = src;
+        img.dataset.src = src;
+        card.dataset.src = src;
+
+        // Reveal on load
+        if (img.complete) {
+            img.classList.add('loaded');
+        } else {
+            img.addEventListener('load', function () { img.classList.add('loaded'); });
+        }
+
+        fragment.appendChild(card);
+    }
+    galleryPortrait.appendChild(fragment);
+
+    // Preload portrait images
+    PORTRAIT_IDS.forEach(function (id) {
+        var pre = new Image();
+        pre.src = portraitBase + id + (id === 1 ? '.jpg' : '.JPG');
+    });
+}
+
+// ---------- Password Gate ----------
+var PORTRAIT_PASSWORD = 'c';
+
+function initPortraitGate() {
+    // Check if already unlocked this session
+    if (sessionStorage.getItem('portrait-unlocked') === 'true') {
+        unlockPortrait();
+        return;
+    }
+
+    portraitInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            checkPassword();
+        }
+    });
+
+    // Clear error on typing
+    portraitInput.addEventListener('input', function () {
+        portraitError.classList.remove('show');
+        portraitInput.classList.remove('shake');
+    });
+}
+
+function checkPassword() {
+    if (portraitInput.value === PORTRAIT_PASSWORD) {
+        sessionStorage.setItem('portrait-unlocked', 'true');
+        unlockPortrait();
+    } else {
+        portraitError.classList.add('show');
+        portraitInput.classList.add('shake');
+        portraitInput.value = '';
+        setTimeout(function () {
+            portraitInput.classList.remove('shake');
+        }, 400);
+    }
+}
+
+function unlockPortrait() {
+    portraitGate.classList.add('portrait-gate--unlocked');
+    galleryPortrait.style.display = '';
+    setTimeout(function () {
+        portraitGate.style.display = 'none';
+    }, 400);
+}
+
 // ---------- Lightbox ----------
-function openLightbox(index) {
+function getGallerySrcs(card) {
+    var gallery = card.closest('.masonry');
+    if (!gallery) return [];
+    var cards = gallery.querySelectorAll('.img-card');
+    var srcs = [];
+    cards.forEach(function (c) {
+        srcs.push(c.dataset.src || '');
+    });
+    return srcs;
+}
+
+function openLightbox(card) {
+    var index = parseInt(card.dataset.index, 10);
+    currentSrcs = getGallerySrcs(card);
     currentIndex = index;
     showCurrentImage();
     lightbox.classList.add('open');
@@ -151,8 +249,7 @@ function bindEvents() {
     document.addEventListener('click', function (e) {
         var card = e.target.closest('.img-card');
         if (!card) return;
-        var index = parseInt(card.dataset.index, 10);
-        openLightbox(index);
+        openLightbox(card);
     });
 
     btnClose.addEventListener('click', function (e) {
@@ -184,7 +281,7 @@ function bindEvents() {
 
 // ---------- Init ----------
 function init() {
-    // Preload all images
+    // Preload all landscape images
     IMAGE_IDS.forEach(function (id) {
         var img = new Image();
         img.src = imageBase + id + '.jpg';
@@ -192,9 +289,10 @@ function init() {
 
     createCards();
     updateGallery();
-
-    // Auto-rotate landscape images
     setInterval(updateGallery, SWITCH_INTERVAL);
+
+    createPortraitCards();
+    initPortraitGate();
 
     bindEvents();
 }

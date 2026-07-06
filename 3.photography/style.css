@@ -180,6 +180,81 @@ body.has-nav { padding-top: 52px; }
   letter-spacing: 0.03em;
 }
 
+/* ---------- Portrait Password Gate ---------- */
+.portrait-gate {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4rem 2rem 5rem;
+}
+.portrait-gate-inner {
+  text-align: center;
+  max-width: 320px;
+  width: 100%;
+}
+.portrait-lock-icon {
+  color: var(--color-text-dim);
+  margin-bottom: 1.2rem;
+  opacity: 0.6;
+}
+.portrait-gate-text {
+  font-family: 'Inter', 'Noto Sans SC', sans-serif;
+  font-size: 0.9rem;
+  color: var(--color-text-dim);
+  margin: 0 0 1rem;
+  letter-spacing: 0.03em;
+}
+.portrait-gate-input {
+  width: 100%;
+  padding: 10px 16px;
+  background: var(--color-surface);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: var(--color-text);
+  font-family: 'Inter', 'Noto Sans SC', sans-serif;
+  font-size: 1rem;
+  text-align: center;
+  letter-spacing: 0.2em;
+  outline: none;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.portrait-gate-input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-dim);
+}
+.portrait-gate-input::placeholder {
+  color: var(--color-text-muted);
+  letter-spacing: 0.03em;
+}
+.portrait-gate-error {
+  font-size: 0.82rem;
+  color: #e05555;
+  margin: 0.6rem 0 0;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  min-height: 1.2em;
+}
+.portrait-gate-error.show { opacity: 1; }
+.portrait-gate-input.shake {
+  animation: gate-shake 0.4s ease;
+}
+@keyframes gate-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(5px); }
+}
+.portrait-gate--unlocked {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+  position: absolute;
+}
+#section-portrait {
+  position: relative;
+}
+
 /* ---------- Masonry Grid ---------- */
 .masonry {
   column-count: 3;

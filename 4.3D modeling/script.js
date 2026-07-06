@@ -2,15 +2,15 @@
 // 3D Modeling Page — Gallery
 // ========================================
 
-// Images in this folder
+// Images in this folder (ordered 1–7)
 var IMAGES = [
-    'AUV.png',
-    'basketball robot.png',
-    'claw.png',
-    'clock.png',
-    'container.png',
-    'rubbish bin.png',
-    '榫卯.png'
+    '1.rubbish bin.png',
+    '2.basketball robot.png',
+    '3.榫卯.png',
+    '4.container.png',
+    '5.clock.png',
+    '6.claw.png',
+    '7.AUV.png'
 ];
 
 // ---------- DOM refs ----------
