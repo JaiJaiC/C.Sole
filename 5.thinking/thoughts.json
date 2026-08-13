@@ -12,6 +12,21 @@
   {
     "date": "2026-08-11",
     "title": "Personal Infrastructure→Workflow→Output",
-    "body": "==Personal infrastructure== = Physical environment + Digital environment + Cognitive environment + Social environment\ncommon waste time：网络不稳定、登录验证码、repetitive dirty work\n\n\n1.项目本身有没有意义？是什么？如何清晰的定义和描述问题、理解架构？\n2.如何efficient、creative、critical地完成proj；\n3.proj完成了，人本身能从项目中学到什么东西，而不是全部托付给AI，一些值得深思的问题是什么？人类在哪个时刻的直觉判断超过了AI？后续深入work？\n\n\n一个好的SOP：端杯茶坐到电脑面前，3min内开机，点开所有需要的东西，配置好固定显示屏窗口和软件，开始work……\n\n\n一些比较重要的事情： AI的版本控制和影响范围，log纠错，如何清晰完整准确的可视化 架构"
+    "body": "Personal infra = Physical env + Digital env + Cognitive env + Social env\ncommon waste time：net、log in、repetitive dirty work\n\n1.项目本身有没有意义？是什么？如何清晰的定义和描述问题、理解架构？\n2.如何efficient、creative、critical地完成proj；\n3.proj完成了，人本身能从项目中学到什么东西，而不是全部托付给AI，一些值得深思的问题是什么？人类在哪个时刻的直觉判断超过了AI？后续深入work？\n\n一个好的SOP：端杯茶坐到电脑面前，整理好桌面，3min内开机，点开所有需要的东西，配置好固定显示屏窗口和软件，开始work……\n\n一些比较重要的事情： AI的版本控制和影响范围，log纠错，如何清晰完整准确的可视化 架构"
+  },
+  {
+    "date": "2026-08-11",
+    "title": "Reflect",
+    "body": "笔记应该是高质产出，而不是全部，应该是能够对他人也有所启发的东西"
+  },
+  {
+    "date": "2026-08-13",
+    "title": "小红书屏幕背后和个人高光",
+    "body": "多向优秀的人学习，多学习advanced work，谦虚\nscholarship & rank & title这些只是fame，重要的是process和contribution！\n向世界上最顶级的人学习，你得在现实中去真的接触那些人，如何成功\n包括学校里那些最厉害的人和老师，谦虚使人进步\n闭门造车终究是不太好，需要和最顶尖的人学习\n现在的环境中你是比较优秀的存在，但你不能一直呆在你的舒适区\n\n\n展 望\n世界太大，我喜欢的太多，总试图抓住所有，而有些兴趣爱好像揭棋、美术已经达到了就该放下了，我希望我只专于一件事情把它做到极致。\n机器人的路还有很长，要做最有意义的work，要向世界上最前沿的research学习，Learn from the best people，希望有一天也能成为像neal一样优秀的人。\n希望我永远不要停止对艺术的追求，永远热爱机器人"
+  },
+  {
+    "date": "2026-08-13",
+    "title": "你想度过怎样的人生？",
+    "body": "6.12毕业生代表座谈会，郭海书记讲话感悟：\n爱国爱党、方位意识、国家战略、思维格局、精神、奉献、远大志向（干大事）、善、价值观、人的情怀、感恩；微观+宏观、世界的眼光\n关于发言：高度、层次、逻辑\n团队、整合资源、成为定义问题的人、领导力，关键时刻能站出来、把握时机\n好奇心、想象力和创造力、批判思考、第一性原理\nkeep learning，做自己"
   }
 ]
