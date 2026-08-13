@@ -6,52 +6,58 @@
   var GITHUB_REPO = 'C.Sole';
   var GITHUB_BRANCH = 'main';
   var CONTENT_PATH = '5.thinking/thoughts.json';
-  var DRAFT_KEY = 'csole-thinking-draft-v1';
+  var DRAFT_KEY = 'csole-thinking-draft-v2';
+  var LEGACY_DRAFT_KEY = 'csole-thinking-draft-v1';
   var TOKEN_KEY = 'csole-thinking-github-token';
+  var AUTO_SAVE_INTERVAL = 60 * 1000;
+  var MAX_INPUT_IMAGE_BYTES = 12 * 1024 * 1024;
+  var MAX_STORED_IMAGE_BYTES = 1.5 * 1024 * 1024;
 
-  var thinkGate = document.getElementById('think-gate');
-  var thinkInput = document.getElementById('think-password');
-  var thinkError = document.getElementById('think-error');
-  var thoughtsContent = document.getElementById('thoughts-content');
-  var thoughtsList = document.getElementById('thoughts-list');
-  var thoughtTemplate = document.getElementById('thought-template');
-  var addButton = document.getElementById('add-thought');
-  var publishButton = document.getElementById('publish-thoughts');
-  var statusText = document.getElementById('editor-status');
-  var statusDot = document.getElementById('editor-status-dot');
-  var tokenDialog = document.getElementById('token-dialog');
-  var tokenForm = document.getElementById('token-form');
-  var tokenInput = document.getElementById('github-token');
-  var tokenError = document.getElementById('token-error');
-  var confirmPublish = document.getElementById('confirm-publish');
+  var $ = function (id) { return document.getElementById(id); };
+  var thinkGate = $('think-gate');
+  var thinkInput = $('think-password');
+  var thinkError = $('think-error');
+  var thoughtsContent = $('thoughts-content');
+  var thoughtsList = $('thoughts-list');
+  var thoughtTemplate = $('thought-template');
+  var addButton = $('add-thought');
+  var publishButton = $('publish-thoughts');
+  var settingsButton = $('github-settings');
+  var statusText = $('editor-status');
+  var statusDot = $('editor-status-dot');
+  var tokenDialog = $('token-dialog');
+  var tokenForm = $('token-form');
+  var tokenInput = $('github-token');
+  var tokenError = $('token-error');
+  var rememberToken = $('remember-token');
+  var forgetToken = $('forget-token');
+  var confirmPublish = $('confirm-publish');
 
   var baseThoughts = [];
+  var currentSection = 'important';
   var isPublishing = false;
+  var isDirty = false;
   var saveTimer;
 
   thinkInput.addEventListener('keydown', function (event) {
     if (event.key !== 'Enter') return;
     event.preventDefault();
-    if (thinkInput.value.toLowerCase() === THINK_PASSWORD) {
-      unlockThinking();
-    } else {
+    if (thinkInput.value.toLowerCase() === THINK_PASSWORD) unlockThinking();
+    else {
       thinkError.classList.add('show');
       thinkInput.classList.add('shake');
       thinkInput.value = '';
       setTimeout(function () { thinkInput.classList.remove('shake'); }, 400);
     }
   });
-
-  thinkInput.addEventListener('input', function () {
-    thinkError.classList.remove('show');
-    thinkInput.classList.remove('shake');
-  });
+  thinkInput.addEventListener('input', function () { thinkError.classList.remove('show'); });
 
   async function unlockThinking() {
     thinkGate.classList.add('think-gate--unlocked');
     thoughtsContent.hidden = false;
     setTimeout(function () { thinkGate.hidden = true; }, 400);
     await loadThoughts();
+    setInterval(autoSync, AUTO_SAVE_INTERVAL);
   }
 
   async function loadThoughts() {
@@ -61,17 +67,14 @@
       if (!response.ok) throw new Error('HTTP ' + response.status);
       baseThoughts = normalizeThoughts(await response.json());
       var draft = readDraft();
+      isDirty = Boolean(draft);
       renderThoughts(draft || baseThoughts);
-      setStatus(draft ? 'draft' : 'synced', draft ? '已恢复本地草稿' : '已与 GitHub 同步');
+      setStatus(draft ? 'draft' : 'synced', draft ? '已恢复本地草稿，等待自动同步' : '已与 GitHub 同步');
     } catch (error) {
       var savedDraft = readDraft();
-      if (savedDraft) {
-        renderThoughts(savedDraft);
-        setStatus('draft', '网络不可用，已恢复本地草稿');
-      } else {
-        renderThoughts([]);
-        setStatus('error', '读取失败，请刷新重试');
-      }
+      isDirty = Boolean(savedDraft);
+      renderThoughts(savedDraft || []);
+      setStatus(savedDraft ? 'draft' : 'error', savedDraft ? '网络不可用，已恢复本地草稿' : '读取失败，请刷新重试');
     }
   }
 
@@ -79,59 +82,142 @@
     if (!Array.isArray(value)) return [];
     return value.map(function (thought) {
       return {
+        id: String(thought.id || makeId()),
+        type: thought.type === 'notes' ? 'notes' : 'important',
         date: String(thought.date || ''),
         title: String(thought.title || ''),
-        body: String(thought.body || '')
+        bodyHtml: sanitizeBodyHtml(thought.bodyHtml || textToHtml(thought.body || ''))
       };
     });
   }
 
+  function makeId() {
+    return 't-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+  }
+
+  function textToHtml(text) {
+    var holder = document.createElement('div');
+    holder.textContent = String(text || '');
+    return holder.innerHTML.replace(/\n/g, '<br>');
+  }
+
+  function sanitizeBodyHtml(html) {
+    var template = document.createElement('template');
+    template.innerHTML = String(html || '');
+    template.content.querySelectorAll('*').forEach(function (node) {
+      if (node.tagName === 'IMG') {
+        var src = node.getAttribute('src') || '';
+        if (!/^data:image\/(png|jpeg|gif|webp);base64,/i.test(src)) node.remove();
+        else Array.from(node.attributes).forEach(function (attr) { if (!['src', 'alt'].includes(attr.name)) node.removeAttribute(attr.name); });
+      } else if (node.tagName === 'BR') {
+        Array.from(node.attributes).forEach(function (attr) { node.removeAttribute(attr.name); });
+      } else {
+        node.replaceWith(document.createTextNode(node.textContent || ''));
+      }
+    });
+    return template.innerHTML;
+  }
+
   function readDraft() {
     try {
-      var value = localStorage.getItem(DRAFT_KEY);
-      return value ? normalizeThoughts(JSON.parse(value)) : null;
-    } catch (error) {
-      return null;
-    }
+      var raw = localStorage.getItem(DRAFT_KEY) || localStorage.getItem(LEGACY_DRAFT_KEY);
+      return raw ? normalizeThoughts(JSON.parse(raw)) : null;
+    } catch (error) { return null; }
   }
 
   function renderThoughts(thoughts) {
     thoughtsList.replaceChildren();
-    thoughts.forEach(function (thought) { appendThought(thought); });
-    if (!thoughts.length) appendThought(createEmptyThought());
+    thoughts.filter(function (thought) { return thought.type === currentSection; }).forEach(function (thought) { appendThought(thought); });
+    updateEmptyState();
   }
 
   function appendThought(thought, focusTitle) {
     var card = thoughtTemplate.content.firstElementChild.cloneNode(true);
+    card.dataset.id = thought.id || makeId();
+    card.dataset.type = thought.type || currentSection;
     var date = card.querySelector('.thought-date');
     var title = card.querySelector('.thought-title');
     var body = card.querySelector('.thought-excerpt');
     date.value = thought.date;
     title.textContent = thought.title;
-    body.textContent = thought.body;
-
+    body.innerHTML = sanitizeBodyHtml(thought.bodyHtml);
     card.addEventListener('input', scheduleDraftSave);
     card.addEventListener('change', scheduleDraftSave);
-    card.querySelectorAll('[contenteditable="true"]').forEach(function (editable) {
-      editable.addEventListener('paste', pastePlainText);
-    });
+    title.addEventListener('paste', pastePlainText);
+    setupImageInput(body);
     card.querySelector('.thought-delete').addEventListener('click', function () {
-      if (!window.confirm('确定删除这条想法？')) return;
+      if (!window.confirm('确定删除这条记录？')) return;
       card.remove();
-      if (!thoughtsList.children.length) appendThought(createEmptyThought(), true);
       saveDraftNow();
+      updateEmptyState();
     });
-
     thoughtsList.appendChild(card);
     if (focusTitle) title.focus();
   }
 
-  function createEmptyThought() {
-    return {
-      date: new Date().toISOString().slice(0, 10),
-      title: '',
-      body: ''
-    };
+  function setupImageInput(editor) {
+    editor.addEventListener('paste', function (event) {
+      var files = Array.from((event.clipboardData && event.clipboardData.items) || []).filter(function (item) { return item.kind === 'file' && item.type.indexOf('image/') === 0; }).map(function (item) { return item.getAsFile(); });
+      if (!files.length) { pastePlainText(event); return; }
+      event.preventDefault();
+      insertImages(editor, files);
+    });
+    editor.addEventListener('dragover', function (event) { event.preventDefault(); editor.classList.add('is-dragging'); });
+    editor.addEventListener('dragleave', function () { editor.classList.remove('is-dragging'); });
+    editor.addEventListener('drop', function (event) {
+      event.preventDefault();
+      editor.classList.remove('is-dragging');
+      var files = Array.from(event.dataTransfer.files || []).filter(function (file) { return file.type.indexOf('image/') === 0; });
+      if (files.length) insertImages(editor, files);
+    });
+  }
+
+  async function insertImages(editor, files) {
+    for (var index = 0; index < files.length; index++) {
+      var file = files[index];
+      if (file.size > MAX_INPUT_IMAGE_BYTES) {
+        window.alert('图片“' + file.name + '”超过 12 MB，请先压缩后再插入。');
+        continue;
+      }
+      var dataUrl;
+      try {
+        dataUrl = await optimizeImage(file);
+      } catch (error) {
+        window.alert('图片“' + (file.name || '未命名图片') + '”处理失败，请换一张图片重试。');
+        continue;
+      }
+      if (dataUrl.length * 0.75 > MAX_STORED_IMAGE_BYTES) {
+        window.alert('图片“' + (file.name || '未命名图片') + '”压缩后仍然过大，请先裁剪后再插入。');
+        continue;
+      }
+      var image = document.createElement('img');
+      image.src = dataUrl;
+      image.alt = file.name || '粘贴的图片';
+      editor.appendChild(image);
+      editor.appendChild(document.createElement('br'));
+    }
+    scheduleDraftSave();
+  }
+
+  function readFileAsDataUrl(file) {
+    return new Promise(function (resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function () { resolve(reader.result); };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function optimizeImage(file) {
+    if (file.size < 700 * 1024 || file.type === 'image/gif') return readFileAsDataUrl(file);
+    var bitmap = await createImageBitmap(file);
+    var scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
+    var canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+    canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close();
+    return canvas.toDataURL('image/webp', 0.82);
   }
 
   function pastePlainText(event) {
@@ -140,148 +226,152 @@
     document.execCommand('insertText', false, text);
   }
 
-  function collectThoughts() {
+  function collectVisibleThoughts() {
     return Array.from(thoughtsList.querySelectorAll('.thought-card')).map(function (card) {
       return {
+        id: card.dataset.id,
+        type: card.dataset.type,
         date: card.querySelector('.thought-date').value,
         title: card.querySelector('.thought-title').innerText.trim(),
-        body: card.querySelector('.thought-excerpt').innerText.trim()
+        bodyHtml: sanitizeBodyHtml(card.querySelector('.thought-excerpt').innerHTML)
       };
-    }).filter(function (thought) {
-      return thought.title || thought.body;
-    });
+    }).filter(hasContent);
+  }
+
+  function collectThoughts() {
+    var current = collectVisibleThoughts();
+    var other = (readDraft() || baseThoughts).filter(function (thought) { return thought.type !== currentSection; });
+    return current.concat(other).sort(function (a, b) { return b.date.localeCompare(a.date); });
+  }
+
+  function hasContent(thought) {
+    var probe = document.createElement('div');
+    probe.innerHTML = thought.bodyHtml;
+    return Boolean(thought.title || probe.textContent.trim() || probe.querySelector('img'));
   }
 
   function scheduleDraftSave() {
     clearTimeout(saveTimer);
-    setStatus('saving', '正在保存草稿…');
-    saveTimer = setTimeout(saveDraftNow, 250);
+    isDirty = true;
+    setStatus('saving', '正在保存到此设备…');
+    saveTimer = setTimeout(saveDraftNow, 300);
   }
 
   function saveDraftNow() {
     clearTimeout(saveTimer);
     try {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify(collectThoughts()));
-      setStatus('draft', '草稿已实时保存');
+      var thoughts = collectThoughts();
+      isDirty = JSON.stringify(thoughts) !== JSON.stringify(baseThoughts);
+      if (isDirty) localStorage.setItem(DRAFT_KEY, JSON.stringify(thoughts));
+      else localStorage.removeItem(DRAFT_KEY);
+      localStorage.removeItem(LEGACY_DRAFT_KEY);
+      setStatus(isDirty ? 'draft' : 'synced', isDirty ? '已保存到此设备，将在 1 分钟内自动同步' : '已与 GitHub 同步');
     } catch (error) {
-      setStatus('error', '浏览器无法保存草稿');
+      setStatus('error', '本地保存失败；图片可能过大或存储空间不足');
     }
   }
 
-  function setStatus(state, message) {
-    statusDot.dataset.state = state;
-    statusText.textContent = message;
+  function updateEmptyState() {
+    var old = thoughtsList.querySelector('.thought-card--placeholder');
+    if (old) old.remove();
+    if (thoughtsList.querySelector('.thought-card')) return;
+    var placeholder = document.createElement('div');
+    placeholder.className = 'thought-card thought-card--placeholder';
+    placeholder.textContent = currentSection === 'important' ? '还没有重要问题，点击“新建”开始思考。' : '还没有随手记录，想到什么就写下来吧。';
+    thoughtsList.appendChild(placeholder);
   }
 
+  function setStatus(state, message) { statusDot.dataset.state = state; statusText.textContent = message; }
+
+  document.querySelectorAll('.thinking-tab').forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      saveDraftNow();
+      currentSection = tab.dataset.section;
+      document.querySelectorAll('.thinking-tab').forEach(function (item) { item.classList.toggle('is-active', item === tab); });
+      renderThoughts(readDraft() || baseThoughts);
+    });
+  });
+
   addButton.addEventListener('click', function () {
-    appendThought(createEmptyThought(), true);
+    var placeholder = thoughtsList.querySelector('.thought-card--placeholder');
+    if (placeholder) placeholder.remove();
+    appendThought({ id: makeId(), type: currentSection, date: new Date().toISOString().slice(0, 10), title: '', bodyHtml: '' }, true);
     saveDraftNow();
   });
 
   publishButton.addEventListener('click', function () {
-    if (!validateThoughts()) return;
-    var savedToken = sessionStorage.getItem(TOKEN_KEY);
-    if (savedToken) {
-      publishToGitHub(savedToken);
-      return;
-    }
-    openTokenDialog();
+    saveDraftNow();
+    var token = getSavedToken();
+    if (token) publishToGitHub(token, false);
+    else openTokenDialog();
   });
+  settingsButton.addEventListener('click', openTokenDialog);
 
-  function validateThoughts() {
-    var thoughts = collectThoughts();
-    if (!thoughts.length) {
-      window.alert('至少保留一条有内容的想法后再提交。');
-      return false;
-    }
-    var invalid = thoughts.some(function (thought) {
-      return !thought.date || !thought.title || !thought.body;
-    });
-    if (invalid) {
-      window.alert('每条想法都需要日期、标题和正文。');
-      return false;
-    }
-    return true;
-  }
+  function getSavedToken() { return localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY); }
 
   function openTokenDialog() {
     tokenError.textContent = '';
-    tokenInput.value = '';
-    if (typeof tokenDialog.showModal === 'function') {
-      tokenDialog.showModal();
-      setTimeout(function () { tokenInput.focus(); }, 0);
-    } else {
-      var token = window.prompt('请输入 GitHub Fine-grained Token');
-      if (token) publishToGitHub(token.trim());
-    }
+    tokenInput.value = getSavedToken() || '';
+    rememberToken.checked = Boolean(localStorage.getItem(TOKEN_KEY)) || !getSavedToken();
+    if (typeof tokenDialog.showModal === 'function') tokenDialog.showModal();
   }
+
+  forgetToken.addEventListener('click', function () {
+    localStorage.removeItem(TOKEN_KEY);
+    sessionStorage.removeItem(TOKEN_KEY);
+    tokenInput.value = '';
+    tokenError.textContent = '此设备上的 GitHub 授权已清除。';
+  });
 
   tokenForm.addEventListener('submit', function (event) {
     if (event.submitter && event.submitter.value === 'cancel') return;
     event.preventDefault();
     var token = tokenInput.value.trim();
-    if (!token) return;
+    if (!token) { tokenError.textContent = '请输入 GitHub Token。'; return; }
+    if (rememberToken.checked) { localStorage.setItem(TOKEN_KEY, token); sessionStorage.removeItem(TOKEN_KEY); }
+    else { sessionStorage.setItem(TOKEN_KEY, token); localStorage.removeItem(TOKEN_KEY); }
     publishToGitHub(token, true);
   });
 
-  async function publishToGitHub(token, fromDialog) {
+  function autoSync() {
+    if (!isDirty || isPublishing) return;
+    saveDraftNow();
+    var token = getSavedToken();
+    if (token) publishToGitHub(token, false, true);
+    else setStatus('draft', '已保存到此设备；设置 GitHub 授权后可自动同步');
+  }
+
+  async function publishToGitHub(token, fromDialog, silent) {
     if (isPublishing) return;
     isPublishing = true;
     publishButton.disabled = true;
     confirmPublish.disabled = true;
     tokenError.textContent = '';
-    setStatus('publishing', '正在提交到 GitHub…');
-
+    setStatus('publishing', silent ? '检测到改动，正在自动同步…' : '正在同步到 GitHub…');
     var endpoint = 'https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + CONTENT_PATH;
-    var headers = {
-      Accept: 'application/vnd.github+json',
-      Authorization: 'Bearer ' + token,
-      'X-GitHub-Api-Version': '2022-11-28'
-    };
-
+    var headers = { Accept: 'application/vnd.github+json', Authorization: 'Bearer ' + token, 'X-GitHub-Api-Version': '2022-11-28' };
     try {
       var currentResponse = await fetch(endpoint + '?ref=' + encodeURIComponent(GITHUB_BRANCH), { headers: headers });
       if (!currentResponse.ok) throw await githubError(currentResponse);
       var currentFile = await currentResponse.json();
-      var remoteThoughts = normalizeThoughts(JSON.parse(decodeBase64Utf8(currentFile.content)));
-
-      if (JSON.stringify(remoteThoughts) !== JSON.stringify(baseThoughts)) {
-        var overwrite = window.confirm('GitHub 上的内容在你打开页面后发生了变化。是否仍用当前编辑内容覆盖？');
-        if (!overwrite) {
-          setStatus('draft', '提交已取消，本地草稿仍保留');
-          return;
-        }
-      }
-
       var thoughts = collectThoughts();
       var json = JSON.stringify(thoughts, null, 2) + '\n';
       var updateResponse = await fetch(endpoint, {
         method: 'PUT',
         headers: Object.assign({ 'Content-Type': 'application/json' }, headers),
-        body: JSON.stringify({
-          message: '✏️ Update thinking notes from website',
-          content: encodeBase64Utf8(json),
-          sha: currentFile.sha,
-          branch: GITHUB_BRANCH
-        })
+        body: JSON.stringify({ message: 'autosave: update thinking notes ' + new Date().toISOString().slice(0, 10), content: encodeBase64Utf8(json), sha: currentFile.sha, branch: GITHUB_BRANCH })
       });
       if (!updateResponse.ok) throw await githubError(updateResponse);
-
-      sessionStorage.setItem(TOKEN_KEY, token);
       localStorage.removeItem(DRAFT_KEY);
       baseThoughts = thoughts;
+      isDirty = false;
       if (tokenDialog.open) tokenDialog.close();
-      setStatus('synced', '提交成功，网站即将更新');
-      window.alert('提交成功！GitHub Pages 通常会在 1–2 分钟内完成更新。');
+      setStatus('synced', '已自动保存并同步到 GitHub');
     } catch (error) {
-      var message = error && error.message ? error.message : '提交失败，请稍后重试。';
-      setStatus('error', '提交失败，本地草稿已保留');
-      if (fromDialog && tokenDialog.open) {
-        tokenError.textContent = message;
-      } else {
-        sessionStorage.removeItem(TOKEN_KEY);
-        window.alert(message + '\n\n本地草稿仍然安全保留。');
-      }
+      var message = error && error.message ? error.message : '同步失败，请稍后重试。';
+      setStatus('error', '同步失败，本地草稿仍安全保留');
+      if (fromDialog && tokenDialog.open) tokenError.textContent = message;
+      else if (!silent) window.alert(message + '\n\n本地草稿仍然安全保留。');
     } finally {
       isPublishing = false;
       publishButton.disabled = false;
@@ -292,47 +382,32 @@
   async function githubError(response) {
     var detail;
     try { detail = await response.json(); } catch (error) { detail = {}; }
-    if (response.status === 401) return new Error('Token 无效，请检查后重试。');
-    if (response.status === 403) return new Error('Token 没有 Contents 写入权限，或 GitHub 暂时限制了请求。');
-    if (response.status === 404) return new Error('未找到仓库内容。请确认 Token 可访问 JaiJaiC/C.Sole。');
-    if (response.status === 409) return new Error('GitHub 内容刚刚发生变化，请刷新页面后重试。');
-    return new Error((detail && detail.message) || ('GitHub 返回错误 ' + response.status));
+    if (response.status === 401) return new Error('Token 无效，请在 GitHub 设置中更新。');
+    if (response.status === 403) return new Error('Token 没有 Contents 写入权限，或请求受到限制。');
+    if (response.status === 404) return new Error('未找到仓库，请确认 Token 可访问 JaiJaiC/C.Sole。');
+    if (response.status === 409) return new Error('远程内容刚发生变化，请刷新页面后重试。');
+    return new Error(detail.message || ('GitHub 返回错误 ' + response.status));
   }
 
   function encodeBase64Utf8(value) {
-    var bytes = new TextEncoder().encode(value);
-    var binary = '';
-    for (var index = 0; index < bytes.length; index += 8192) {
-      binary += String.fromCharCode.apply(null, bytes.subarray(index, index + 8192));
-    }
+    var bytes = new TextEncoder().encode(value); var binary = '';
+    for (var index = 0; index < bytes.length; index += 8192) binary += String.fromCharCode.apply(null, bytes.subarray(index, index + 8192));
     return btoa(binary);
   }
 
-  function decodeBase64Utf8(value) {
-    var binary = atob(value.replace(/\s/g, ''));
-    var bytes = Uint8Array.from(binary, function (character) { return character.charCodeAt(0); });
-    return new TextDecoder().decode(bytes);
-  }
+  document.addEventListener('visibilitychange', function () { if (document.hidden && isDirty) saveDraftNow(); });
+  window.addEventListener('beforeunload', function () { if (isDirty) saveDraftNow(); });
 
   var dropdowns = document.querySelectorAll('.nav-dropdown');
   dropdowns.forEach(function (dropdown) {
     var trigger = dropdown.firstElementChild;
-    if (!trigger) return;
     trigger.addEventListener('click', function (event) {
       if (window.innerWidth > 500) return;
-      if (dropdown.classList.contains('dropdown-open')) {
-        dropdown.classList.remove('dropdown-open');
-        return;
-      }
-      event.preventDefault();
-      event.stopPropagation();
+      if (dropdown.classList.contains('dropdown-open')) { dropdown.classList.remove('dropdown-open'); return; }
+      event.preventDefault(); event.stopPropagation();
       dropdowns.forEach(function (item) { item.classList.remove('dropdown-open'); });
       dropdown.classList.add('dropdown-open');
     });
   });
-  document.addEventListener('click', function (event) {
-    if (!event.target.closest('.nav-dropdown')) {
-      dropdowns.forEach(function (dropdown) { dropdown.classList.remove('dropdown-open'); });
-    }
-  });
+  document.addEventListener('click', function (event) { if (!event.target.closest('.nav-dropdown')) dropdowns.forEach(function (item) { item.classList.remove('dropdown-open'); }); });
 })();

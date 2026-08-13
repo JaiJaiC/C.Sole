@@ -3,34 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="description" content="C.Sole — Thoughts & Reflections">
+  <meta name="description" content="C.Sole · Thoughts & Reflections">
   <link rel="icon" type="image/jpeg" href="../logo/我的自画像.jpg">
   <script src="../js/favicon.js" defer></script>
   <title>Thinking · C.Sole</title>
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=3">
+  <link rel="stylesheet" href="style.css?v=4">
 </head>
 <body class="has-nav">
   <nav class="site-nav" aria-label="Main navigation">
     <a href="https://jaijaic.site/C/" class="nav-logo" aria-label="Home"><img src="../logo/我的自画像.jpg" alt="C.Sole" class="nav-logo-img"></a>
     <ul class="nav-links">
-      <li class="nav-dropdown">
-        <a href="../">Music</a>
-        <ul class="nav-submenu">
-          <li><a href="https://jaijaic.site/ServoPiaBot/" target="_blank" rel="noopener">ServoPiaBot</a></li>
-        </ul>
-      </li>
+      <li class="nav-dropdown"><a href="../">Music</a><ul class="nav-submenu"><li><a href="https://jaijaic.site/ServoPiaBot/" target="_blank" rel="noopener">ServoPiaBot</a></li></ul></li>
       <li><a href="../2.draw/">Draw</a></li>
-      <li class="nav-dropdown">
-        <a href="../3.photography/">Photography</a>
-        <ul class="nav-submenu">
-          <li><a href="../3.photography/">Landscape</a></li>
-          <li><a href="../3.photography/#section-portrait">Portrait</a></li>
-        </ul>
-      </li>
+      <li class="nav-dropdown"><a href="../3.photography/">Photography</a><ul class="nav-submenu"><li><a href="../3.photography/">Landscape</a></li><li><a href="../3.photography/#section-portrait">Portrait</a></li></ul></li>
       <li><a href="../4.3D%20modeling/">3D Modeling</a></li>
       <li><a href="./" class="nav-active">Thinking</a></li>
     </ul>
@@ -43,43 +31,38 @@
 
   <div class="think-gate" id="think-gate">
     <div class="think-gate-inner">
-      <svg class="think-lock-icon" viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-        <circle cx="12" cy="16" r="1"/>
-      </svg>
-      <p class="think-gate-text">Enter password to view thoughts</p>
+      <svg class="think-lock-icon" viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      <p class="think-gate-text">输入密码以查看与编辑</p>
       <input type="password" class="think-gate-input" id="think-password" placeholder="Password…" maxlength="20" autocomplete="off">
-      <p class="think-gate-error" id="think-error" role="alert">Incorrect password</p>
+      <p class="think-gate-error" id="think-error" role="alert">密码不正确</p>
     </div>
   </div>
 
   <main class="thoughts-container" id="thoughts-content" hidden>
     <section class="editor-bar" aria-label="Thinking editor">
-      <div class="editor-status-wrap">
-        <span class="editor-status-dot" id="editor-status-dot" aria-hidden="true"></span>
-        <span class="editor-status" id="editor-status" role="status" aria-live="polite">正在读取…</span>
-      </div>
+      <div class="editor-status-wrap"><span class="editor-status-dot" id="editor-status-dot" aria-hidden="true"></span><span class="editor-status" id="editor-status" role="status" aria-live="polite">正在读取…</span></div>
       <div class="editor-actions">
         <button class="editor-button editor-button--quiet" id="add-thought" type="button">＋ 新建</button>
-        <button class="editor-button editor-button--primary" id="publish-thoughts" type="button">提交到 GitHub</button>
+        <button class="editor-button editor-button--quiet" id="github-settings" type="button">GitHub 设置</button>
+        <button class="editor-button editor-button--primary" id="publish-thoughts" type="button">立即同步</button>
       </div>
     </section>
 
-    <p class="editor-hint">点击日期、标题或正文即可编辑。输入内容会实时保存在此浏览器中。</p>
+    <nav class="thinking-tabs" aria-label="记录分类">
+      <button class="thinking-tab is-active" type="button" data-section="important"><span>重要问题</span><small>值得持续推敲的主题</small></button>
+      <button class="thinking-tab" type="button" data-section="notes"><span>随手记录</span><small>灵感、片段与日常观察</small></button>
+    </nav>
+    <p class="editor-hint">内容实时保存在此设备，每 1 分钟检查并自动同步。正文支持拖入图片，或用 Ctrl/Cmd + V 粘贴截图。</p>
     <section id="thoughts-list" aria-label="Thoughts"></section>
 
     <template id="thought-template">
       <article class="thought-card">
         <div class="thought-card-toolbar">
-          <label class="thought-date-label">
-            <span class="sr-only">日期</span>
-            <input class="thought-date" type="date" aria-label="日期">
-          </label>
-          <button class="thought-delete" type="button" aria-label="删除这条想法" title="删除">×</button>
+          <label class="thought-date-label"><span class="sr-only">日期</span><input class="thought-date" type="date" aria-label="日期"></label>
+          <button class="thought-delete" type="button" aria-label="删除这条记录" title="删除">×</button>
         </div>
         <h2 class="thought-title" contenteditable="true" data-placeholder="写一个标题…" aria-label="标题" spellcheck="true"></h2>
-        <div class="thought-excerpt" contenteditable="true" data-placeholder="记下此刻的想法…" aria-label="正文" spellcheck="true"></div>
+        <div class="thought-excerpt" contenteditable="true" data-placeholder="记下此刻的想法；可拖入或粘贴图片…" aria-label="正文" spellcheck="true"></div>
       </article>
     </template>
   </main>
@@ -87,24 +70,22 @@
   <dialog class="token-dialog" id="token-dialog">
     <form method="dialog" class="token-dialog-inner" id="token-form">
       <button class="token-dialog-close" value="cancel" aria-label="关闭" type="submit" formnovalidate>×</button>
-      <p class="token-dialog-kicker">GitHub authentication</p>
-      <h2>提交你的修改</h2>
-      <p>粘贴一个仅可访问 <strong>JaiJaiC/C.Sole</strong>、具有 <strong>Contents: Read and write</strong> 权限的 Fine-grained Token。</p>
+      <p class="token-dialog-kicker">GitHub 自动同步</p>
+      <h2>在此设备记住授权</h2>
+      <p>输入一个仅可访问 <strong>JaiJaiC/C.Sole</strong>、具有 <strong>Contents: Read and write</strong> 权限的 Fine-grained Token。保存后每分钟会在有改动时自动提交。</p>
       <label class="token-label" for="github-token">GitHub Token</label>
-      <input class="token-input" id="github-token" type="password" autocomplete="off" placeholder="github_pat_…" required>
-      <p class="token-security">Token 只保存在当前浏览器会话，关闭标签页后即清除，也不会进入网页内容或 GitHub 提交。</p>
+      <input class="token-input" id="github-token" type="password" autocomplete="off" placeholder="github_pat_…">
+      <label class="remember-token"><input id="remember-token" type="checkbox" checked> 在此浏览器中长期记住（否则只记住到关闭标签页）</label>
+      <p class="token-security">Token 不会写入网页或 Git 仓库。共享设备请勿勾选；已暴露的 Token 请立即撤销。</p>
       <p class="token-error" id="token-error" role="alert"></p>
       <div class="token-dialog-actions">
-        <a class="token-help" href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">创建 Token ↗</a>
-        <button class="editor-button editor-button--primary" id="confirm-publish" value="default" type="submit">授权并提交</button>
+        <button class="token-forget" id="forget-token" type="button">清除此设备授权</button>
+        <button class="editor-button editor-button--primary" id="confirm-publish" value="default" type="submit">保存并同步</button>
       </div>
     </form>
   </dialog>
 
-  <footer class="site-footer">
-    <p class="footer-text">© 2026 C.Sole</p>
-  </footer>
-
-  <script src="script.js?v=3" defer></script>
+  <footer class="site-footer"><p class="footer-text">© 2026 C.Sole</p></footer>
+  <script src="script.js?v=4" defer></script>
 </body>
 </html>
