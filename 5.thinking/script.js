@@ -227,7 +227,7 @@
   }
 
   function collectVisibleThoughts() {
-    return Array.from(thoughtsList.querySelectorAll('.thought-card')).map(function (card) {
+    return Array.from(thoughtsList.querySelectorAll('.thought-card:not(.thought-card--placeholder)')).map(function (card) {
       return {
         id: card.dataset.id,
         type: card.dataset.type,
@@ -267,7 +267,9 @@
       localStorage.removeItem(LEGACY_DRAFT_KEY);
       setStatus(isDirty ? 'draft' : 'synced', isDirty ? '已保存到此设备，将在 1 分钟内自动同步' : '已与 GitHub 同步');
     } catch (error) {
-      setStatus('error', '本地保存失败；图片可能过大或存储空间不足');
+      var storageFull = error && (error.name === 'QuotaExceededError' || error.code === 22 || error.code === 1014);
+      setStatus('error', storageFull ? '本地空间不足，请删除或缩小部分图片' : '本地保存失败，请刷新页面后重试');
+      console.error('Thinking draft save failed:', error);
     }
   }
 
