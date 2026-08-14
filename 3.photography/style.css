@@ -148,15 +148,16 @@ body.has-nav { padding-top: 52px; }
   padding: 10vh 2rem 6vh;
 }
 .hero-title {
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(2.8rem, 6vw, 5rem);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(3rem, 8vw, 5.5rem);
   font-weight: 600;
-  letter-spacing: 0.02em;
+  line-height: 1;
+  letter-spacing: 0.06em;
   margin: 0;
   color: var(--color-accent);
 }
 .hero-subtitle {
-  font-family: 'Playfair Display', serif;
+  font-family: 'Cormorant Garamond', Georgia, serif;
   font-style: italic;
   font-size: clamp(1.1rem, 2.5vw, 1.5rem);
   color: var(--color-text-dim);
@@ -172,7 +173,7 @@ body.has-nav { padding-top: 52px; }
 
 /* ---------- Section Title ---------- */
 .section-title {
-  font-family: 'Playfair Display', serif;
+  font-family: 'Cormorant Garamond', Georgia, serif;
   text-align: center;
   font-size: clamp(1.6rem, 3vw, 2.2rem);
   font-weight: 600;
@@ -381,6 +382,7 @@ body.has-nav { padding-top: 52px; }
   .nav-logo-img { height: 28px; width: 28px; flex-shrink: 0; }
   body.has-nav { padding-top: 46px; }
   .hero { padding: 6vh 1.5rem 4vh; }
+  .hero-title { font-size: clamp(2.5rem, 10vw, 3.5rem); }
   .masonry { column-count: 1; width: 92%; }
   .img-card { margin-bottom: 16px; }
   .section-title { margin: 3rem 0 1.5rem; }

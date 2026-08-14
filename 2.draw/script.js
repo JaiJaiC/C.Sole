@@ -19,14 +19,6 @@ var btnNext = document.getElementById('lightbox-next');
 var currentIndex = -1;
 var imageSrcs = [];
 
-// ---------- Preload all images ----------
-function preloadAll() {
-    IMAGE_IDS.forEach(function (id) {
-        var img = new Image();
-        img.src = 'draw/' + id + '.jpg';
-    });
-}
-
 // ---------- Create cards ----------
 function createCards() {
     var fragment = document.createDocumentFragment();
@@ -39,6 +31,9 @@ function createCards() {
         var img = document.createElement('img');
         img.className = 'gallery-img';
         img.alt = 'Draw ' + id;
+        img.loading = i < 2 ? 'eager' : 'lazy';
+        img.decoding = 'async';
+        img.fetchPriority = i < 2 ? 'high' : 'low';
         card.appendChild(img);
 
         fragment.appendChild(card);
@@ -54,7 +49,7 @@ function updateGallery() {
         var img = card.querySelector('.gallery-img');
         var src = imageSrcs[i];
         if (img.dataset.src !== src) {
-            img.src = src;
+            img.src = 'thumbs/' + IMAGE_IDS[i] + '.webp';
             img.dataset.src = src;
             card.dataset.src = src;
             img.classList.add('loaded');
@@ -138,7 +133,6 @@ function bindEvents() {
 
 // ---------- Init ----------
 function init() {
-    preloadAll();
     createCards();
     updateGallery();
     bindEvents();

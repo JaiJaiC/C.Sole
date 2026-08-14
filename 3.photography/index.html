@@ -6,10 +6,11 @@
     <title>Photography · C.Sole</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Inter:wght@300;400;500&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Inter:wght@300;400;500&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet"></noscript>
     <link rel="icon" type="image/jpeg" href="../logo/我的自画像.jpg">
     <script src="../js/favicon.js" defer></script>
-    <link rel="stylesheet" href="style.css?v=4">
+    <link rel="stylesheet" href="style.css?v=5">
 </head>
 <body class="has-nav">
 
@@ -65,10 +66,10 @@
             </div>
         </div>
         <div class="masonry" id="gallery-portrait" style="visibility:hidden;">
-            <div class="img-card" data-index="0" data-src="portrait/1.jpg"><img class="gallery-img loaded" src="portrait/1.jpg" alt="Portrait 1"></div>
-            <div class="img-card" data-index="1" data-src="portrait/2.JPG"><img class="gallery-img loaded" src="portrait/2.JPG" alt="Portrait 2"></div>
-            <div class="img-card" data-index="2" data-src="portrait/3.JPG"><img class="gallery-img loaded" src="portrait/3.JPG" alt="Portrait 3"></div>
-            <div class="img-card" data-index="3" data-src="portrait/4.JPG"><img class="gallery-img loaded" src="portrait/4.JPG" alt="Portrait 4"></div>
+            <div class="img-card" data-index="0" data-src="portrait/1.jpg" data-thumb="thumbs/portrait/1.webp"><img class="gallery-img" loading="lazy" decoding="async" alt="Portrait 1"></div>
+            <div class="img-card" data-index="1" data-src="portrait/2.JPG" data-thumb="thumbs/portrait/2.webp"><img class="gallery-img" loading="lazy" decoding="async" alt="Portrait 2"></div>
+            <div class="img-card" data-index="2" data-src="portrait/3.JPG" data-thumb="thumbs/portrait/3.webp"><img class="gallery-img" loading="lazy" decoding="async" alt="Portrait 3"></div>
+            <div class="img-card" data-index="3" data-src="portrait/4.JPG" data-thumb="thumbs/portrait/4.webp"><img class="gallery-img" loading="lazy" decoding="async" alt="Portrait 4"></div>
         </div>
     </section>
 
@@ -86,6 +87,6 @@
         <div id="lightbox-counter" class="lightbox-counter"></div>
     </div>
 
-    <script src="script.js?v=4"></script>
+    <script src="script.js?v=5" defer></script>
 </body>
 </html>

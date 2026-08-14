@@ -37,8 +37,11 @@ function createCards() {
         var img = document.createElement('img');
         img.className = 'gallery-img';
         img.alt = IMAGES[i].replace(/\.[^.]+$/, '');
-        img.src = encodeURI(IMAGES[i]);
+        img.src = encodeURI('thumbs/' + IMAGES[i].replace(/\.[^.]+$/, '.webp'));
         img.dataset.src = encodeURI(IMAGES[i]);
+        img.loading = i < 2 ? 'eager' : 'lazy';
+        img.decoding = 'async';
+        img.fetchPriority = i < 2 ? 'high' : 'low';
         card.appendChild(img);
 
         fragment.appendChild(card);

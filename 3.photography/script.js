@@ -9,6 +9,7 @@ var CARDS_PER_GROUP = 10;
 var IMAGE_IDS = [1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 21, 22];
 var TOTAL_IMAGES = IMAGE_IDS.length; // 17
 var imageBase = 'landscape/';
+var imageThumbBase = 'thumbs/landscape/';
 
 // ---------- DOM refs ----------
 var galleryLandscape = document.getElementById('gallery-landscape');
@@ -80,6 +81,9 @@ function createCards() {
         var img = document.createElement('img');
         img.className = 'gallery-img';
         img.alt = 'Landscape ' + (i + 1);
+        img.loading = i < 2 ? 'eager' : 'lazy';
+        img.decoding = 'async';
+        img.fetchPriority = i < 2 ? 'high' : 'low';
         card.appendChild(img);
 
         fragment.appendChild(card);
@@ -101,7 +105,7 @@ function updateGallery() {
         img.classList.remove('loaded');
         card.dataset.src = src;
         setTimeout(function () {
-            img.src = src;
+            img.src = imageThumbBase + IMAGE_IDS[newIndices[i]] + '.webp';
             img.dataset.src = src;
             img.classList.add('loaded');
         }, 350);
@@ -141,6 +145,11 @@ function checkPassword() {
 function unlockPortrait() {
     portraitGate.style.display = 'none';
     galleryPortrait.style.visibility = 'visible';
+    galleryPortrait.querySelectorAll('.img-card').forEach(function (card) {
+        var img = card.querySelector('.gallery-img');
+        if (!img.getAttribute('src')) img.src = card.dataset.thumb;
+        img.classList.add('loaded');
+    });
 }
 
 // ---------- Lightbox ----------
@@ -231,12 +240,6 @@ function bindEvents() {
 
 // ---------- Init ----------
 function init() {
-    // Preload all landscape images
-    IMAGE_IDS.forEach(function (id) {
-        var img = new Image();
-        img.src = imageBase + id + '.jpg';
-    });
-
     createCards();
     updateGallery();
     setInterval(updateGallery, SWITCH_INTERVAL);

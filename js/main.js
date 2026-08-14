@@ -83,7 +83,7 @@
 
   // ─── Audio Element ────────────────────────────────────────
   var audio = new Audio();
-  audio.preload = 'metadata';
+  audio.preload = 'none';
 
   // ─── Web Audio Context ────────────────────────────────────
   var audioCtx = null;
@@ -285,7 +285,7 @@
 
   // ═══════ PLAYER METHODS ════════════════════════════════════
 
-  function loadTrack(index) {
+  function loadTrack(index, deferAudio) {
     if (index < 0 || index >= PLAYLIST.length) return;
     state.currentIndex = index;
     var track = PLAYLIST[index];
@@ -299,12 +299,15 @@
     var credit = COVER_CREDITS[track.title];
     dom.trackArtist.textContent = credit ? 'C.Sole · COVER ' + credit : 'C.Sole';
 
-    audio.src = track.src;
-    audio.load();
+    if (!deferAudio) {
+      audio.src = track.src;
+      audio.load();
+    }
     persistState();
   }
 
   function play() {
+    if (!audio.getAttribute('src')) loadTrack(state.currentIndex);
     ensureVisRunning();
     // Must resume AudioContext synchronously (iOS requirement)
     if (audioCtx && audioCtx.state === 'suspended') {
@@ -586,8 +589,10 @@
     initNotesRain();
     initSpectrum();
 
-    // Auto-play on page load
-    tryAutoplay();
+    // Render immediately; defer the multi-megabyte MP3 until the visitor presses play.
+    loadTrack(state.currentIndex, true);
+    renderPlaylist();
+    renderPlayingState();
   }
 
   init();
