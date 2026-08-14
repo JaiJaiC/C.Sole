@@ -108,10 +108,12 @@
 
   // ─── Player State ─────────────────────────────────────────
   var saved = loadState();
+  var savedIndex = Number.isInteger(saved.currentIndex) ? saved.currentIndex : 0;
+  if (savedIndex < 0 || savedIndex >= PLAYLIST.length) savedIndex = 0;
   var state = {
-    currentIndex:   0,  // Always start from first track
+    currentIndex:   savedIndex,
     isPlaying:      false,
-    currentTime:    0,
+    currentTime:    Number.isFinite(saved.currentTime) ? saved.currentTime : 0,
     duration:       0,
     volume:         saved.volume != null ? saved.volume : 0.8,
     isShuffled:     false,
@@ -287,7 +289,9 @@
 
   function loadTrack(index, deferAudio) {
     if (index < 0 || index >= PLAYLIST.length) return;
+    var trackChanged = index !== state.currentIndex;
     state.currentIndex = index;
+    if (trackChanged) state.currentTime = 0;
     var track = PLAYLIST[index];
 
     dom.trackTitle.textContent = track.title;
@@ -303,7 +307,7 @@
       audio.src = track.src;
       audio.load();
     }
-    persistState();
+    if (!deferAudio) persistState();
   }
 
   function play() {
@@ -319,6 +323,7 @@
         // If autoplay blocked, overlay handles it
       });
     }
+    return p;
   }
 
   function pause() { audio.pause(); }
@@ -383,7 +388,12 @@
   }
 
   function persistState() {
-    saveState({ volume: state.volume });
+    saveState({
+      currentIndex: state.currentIndex,
+      currentTime: state.currentTime,
+      volume: state.volume,
+      isPlaying: state.isPlaying
+    });
   }
 
   // ═══════ UI RENDERING ══════════════════════════════════════
@@ -469,6 +479,9 @@
 
   audio.addEventListener('loadedmetadata', function () {
     state.duration = audio.duration;
+    if (state.currentTime > 0 && state.currentTime < audio.duration) {
+      audio.currentTime = state.currentTime;
+    }
     dom.progressBar.max = audio.duration || 100;
     dom.timeDuration.textContent = formatTime(audio.duration);
     var durSpan = document.querySelector('.track-duration[data-index="' + state.currentIndex + '"]');
@@ -480,6 +493,11 @@
 
   audio.addEventListener('timeupdate', function () {
     state.currentTime = audio.currentTime;
+    var wholeSecond = Math.floor(state.currentTime);
+    if (wholeSecond % 2 === 0 && state._lastSavedSecond !== wholeSecond) {
+      state._lastSavedSecond = wholeSecond;
+      persistState();
+    }
     if (!state._rafPending) {
       state._rafPending = true;
       requestAnimationFrame(function () {
@@ -491,12 +509,15 @@
 
   audio.addEventListener('play', function () {
     state.isPlaying = true;
+    persistState();
+    window.dispatchEvent(new CustomEvent('csole-player-play'));
     renderPlayingState();
     renderPlaylist();
   });
 
   audio.addEventListener('pause', function () {
     state.isPlaying = false;
+    persistState();
     renderPlayingState();
     renderPlaylist();
   });
@@ -596,6 +617,25 @@
   }
 
   init();
+
+  window.CSolePlayer = {
+    play: play,
+    pause: pause,
+    next: next,
+    prev: prev,
+    setVolume: setVolume,
+    resumeSaved: play,
+    getState: function () {
+      return {
+        currentIndex: state.currentIndex,
+        currentTime: audio.getAttribute('src') ? audio.currentTime : state.currentTime,
+        volume: state.volume,
+        isPlaying: state.isPlaying
+      };
+    }
+  };
+
+  window.addEventListener('pagehide', persistState);
 
   // ─── Mobile dropdown toggle ─────────────────────────
   (function () {
