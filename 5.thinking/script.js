@@ -19,6 +19,9 @@
   var thinkError = $('think-error');
   var thoughtsContent = $('thoughts-content');
   var thoughtsList = $('thoughts-list');
+  var timelineTrack = $('timeline-track');
+  var searchInput = $('thought-search');
+  var backToTop = $('back-to-top');
   var thoughtTemplate = $('thought-template');
   var addButton = $('add-thought');
   var publishButton = $('publish-thoughts');
@@ -126,9 +129,10 @@
   }
 
   function renderThoughts(thoughts) {
+    cancelDeletionCountdowns();
     thoughtsList.replaceChildren();
     thoughts.filter(function (thought) { return thought.type === currentSection; }).forEach(function (thought) { appendThought(thought); });
-    updateEmptyState();
+    applySearchAndTimeline();
   }
 
   function appendThought(thought, focusTitle) {
@@ -147,14 +151,57 @@
     card.addEventListener('change', scheduleDraftSave);
     title.addEventListener('paste', pastePlainText);
     setupImageInput(body);
-    card.querySelector('.thought-delete').addEventListener('click', function () {
-      if (!window.confirm('Delete this note?')) return;
-      card.remove();
-      saveDraftNow();
-      updateEmptyState();
-    });
+    setupDelayedDelete(card, card.querySelector('.thought-delete'));
     thoughtsList.appendChild(card);
     if (focusTitle) (isRecord ? body : title).focus();
+  }
+
+  function setupDelayedDelete(card, button) {
+    button.addEventListener('click', function () {
+      if (card._deleteTimer) {
+        cancelDelete(card, button);
+        return;
+      }
+      var remaining = 5;
+      card.classList.add('is-delete-pending');
+      button.classList.add('is-counting');
+      button.textContent = 'Undo · ' + remaining;
+      button.setAttribute('aria-label', 'Cancel deletion');
+      button.title = 'Cancel deletion';
+      card._deleteTimer = setInterval(function () {
+        if (!card.isConnected) {
+          clearInterval(card._deleteTimer);
+          card._deleteTimer = null;
+          return;
+        }
+        remaining -= 1;
+        if (remaining > 0) {
+          button.textContent = 'Undo · ' + remaining;
+          return;
+        }
+        clearInterval(card._deleteTimer);
+        card._deleteTimer = null;
+        card.remove();
+        saveDraftNow();
+        applySearchAndTimeline();
+      }, 1000);
+    });
+  }
+
+  function cancelDelete(card, button) {
+    clearInterval(card._deleteTimer);
+    card._deleteTimer = null;
+    card.classList.remove('is-delete-pending');
+    button.classList.remove('is-counting');
+    button.textContent = '×';
+    button.setAttribute('aria-label', 'Delete this note');
+    button.title = 'Delete';
+  }
+
+  function cancelDeletionCountdowns() {
+    thoughtsList.querySelectorAll('.thought-card').forEach(function (card) {
+      if (card._deleteTimer) clearInterval(card._deleteTimer);
+    });
   }
 
   function setupImageInput(editor) {
@@ -256,6 +303,7 @@
     clearTimeout(saveTimer);
     isDirty = true;
     setStatus('saving', 'Saving locally…');
+    applySearchAndTimeline();
     saveTimer = setTimeout(saveDraftNow, 300);
   }
 
@@ -278,11 +326,69 @@
   function updateEmptyState() {
     var old = thoughtsList.querySelector('.thought-card--placeholder');
     if (old) old.remove();
-    if (thoughtsList.querySelector('.thought-card')) return;
+    var searchEmpty = thoughtsList.querySelector('.thought-search-empty');
+    if (searchEmpty) searchEmpty.remove();
+    var cards = Array.from(thoughtsList.querySelectorAll('.thought-card'));
+    if (cards.length && cards.some(function (card) { return !card.hidden; })) return;
+    if (cards.length) {
+      var noResults = document.createElement('div');
+      noResults.className = 'thought-search-empty';
+      noResults.textContent = 'No matching notes.';
+      thoughtsList.appendChild(noResults);
+      return;
+    }
     var placeholder = document.createElement('div');
     placeholder.className = 'thought-card thought-card--placeholder';
     placeholder.textContent = currentSection === 'important' ? 'No chats yet.' : 'No records yet.';
     thoughtsList.appendChild(placeholder);
+  }
+
+  function applySearchAndTimeline() {
+    var query = searchInput.value.trim().toLowerCase();
+    thoughtsList.querySelectorAll('.thought-card:not(.thought-card--placeholder)').forEach(function (card) {
+      var date = card.querySelector('.thought-date').value;
+      var title = card.querySelector('.thought-title').innerText;
+      var body = card.querySelector('.thought-excerpt').innerText;
+      card.hidden = Boolean(query) && (date + ' ' + title + ' ' + body).toLowerCase().indexOf(query) === -1;
+    });
+    updateEmptyState();
+    updateTimeline();
+  }
+
+  function updateTimeline() {
+    timelineTrack.replaceChildren();
+    var cards = Array.from(thoughtsList.querySelectorAll('.thought-card:not(.thought-card--placeholder)')).filter(function (card) { return !card.hidden; });
+    if (!cards.length) {
+      var empty = document.createElement('span');
+      empty.className = 'timeline-empty';
+      empty.textContent = searchInput.value.trim() ? 'No matches' : 'No notes yet';
+      timelineTrack.appendChild(empty);
+      return;
+    }
+    cards.forEach(function (card) {
+      var date = card.querySelector('.thought-date').value || 'Undated';
+      var title = card.querySelector('.thought-title').innerText.trim();
+      var body = card.querySelector('.thought-excerpt').innerText.trim().replace(/\s+/g, ' ');
+      var label = title || body || 'Untitled';
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'timeline-item';
+      button.innerHTML = '<time>' + escapeHtml(date.replace(/-/g, '/')) + '</time><span>' + escapeHtml(label.slice(0, 34)) + '</span>';
+      button.addEventListener('click', function () {
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        card.classList.remove('is-timeline-target');
+        void card.offsetWidth;
+        card.classList.add('is-timeline-target');
+        setTimeout(function () { card.classList.remove('is-timeline-target'); }, 1500);
+      });
+      timelineTrack.appendChild(button);
+    });
+  }
+
+  function escapeHtml(value) {
+    var element = document.createElement('span');
+    element.textContent = value;
+    return element.innerHTML;
   }
 
   function setStatus(state, message) { statusDot.dataset.state = state; statusText.textContent = message; }
@@ -291,10 +397,27 @@
     tab.addEventListener('click', function () {
       saveDraftNow();
       currentSection = tab.dataset.section;
+      searchInput.value = '';
       document.querySelectorAll('.thinking-tab').forEach(function (item) { item.classList.toggle('is-active', item === tab); });
       renderThoughts(readDraft() || baseThoughts);
     });
   });
+
+  searchInput.addEventListener('input', applySearchAndTimeline);
+
+  backToTop.addEventListener('click', function () {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function (entries) {
+      backToTop.classList.toggle('is-visible', !entries[0].isIntersecting && !thoughtsContent.hidden);
+    }, { threshold: 0.05 }).observe(document.querySelector('.hero'));
+  } else {
+    window.addEventListener('scroll', function () {
+      backToTop.classList.toggle('is-visible', window.scrollY > 320 && !thoughtsContent.hidden);
+    }, { passive: true });
+  }
 
   addButton.addEventListener('click', function () {
     var placeholder = thoughtsList.querySelector('.thought-card--placeholder');
