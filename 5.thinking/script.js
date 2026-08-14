@@ -61,7 +61,7 @@
   }
 
   async function loadThoughts() {
-    setStatus('loading', '正在读取…');
+    setStatus('loading', 'Loading…');
     try {
       var response = await fetch('thoughts.json?ts=' + Date.now(), { cache: 'no-store' });
       if (!response.ok) throw new Error('HTTP ' + response.status);
@@ -69,12 +69,12 @@
       var draft = readDraft();
       isDirty = Boolean(draft);
       renderThoughts(draft || baseThoughts);
-      setStatus(draft ? 'draft' : 'synced', draft ? '已恢复本地草稿，等待自动同步' : '已与 GitHub 同步');
+      setStatus(draft ? 'draft' : 'synced', draft ? 'Local draft restored · waiting to sync' : 'Synced with GitHub');
     } catch (error) {
       var savedDraft = readDraft();
       isDirty = Boolean(savedDraft);
       renderThoughts(savedDraft || []);
-      setStatus(savedDraft ? 'draft' : 'error', savedDraft ? '网络不可用，已恢复本地草稿' : '读取失败，请刷新重试');
+      setStatus(savedDraft ? 'draft' : 'error', savedDraft ? 'Offline · local draft restored' : 'Unable to load · refresh to retry');
     }
   }
 
@@ -138,21 +138,23 @@
     var date = card.querySelector('.thought-date');
     var title = card.querySelector('.thought-title');
     var body = card.querySelector('.thought-excerpt');
+    var isRecord = card.dataset.type === 'notes';
+    card.classList.toggle('thought-card--record', isRecord);
     date.value = thought.date;
-    title.textContent = thought.title;
-    body.innerHTML = sanitizeBodyHtml(thought.bodyHtml);
+    title.textContent = isRecord ? '' : thought.title;
+    body.innerHTML = sanitizeBodyHtml(isRecord && thought.title ? textToHtml(thought.title) + (thought.bodyHtml ? '<br>' + thought.bodyHtml : '') : thought.bodyHtml);
     card.addEventListener('input', scheduleDraftSave);
     card.addEventListener('change', scheduleDraftSave);
     title.addEventListener('paste', pastePlainText);
     setupImageInput(body);
     card.querySelector('.thought-delete').addEventListener('click', function () {
-      if (!window.confirm('确定删除这条记录？')) return;
+      if (!window.confirm('Delete this note?')) return;
       card.remove();
       saveDraftNow();
       updateEmptyState();
     });
     thoughtsList.appendChild(card);
-    if (focusTitle) title.focus();
+    if (focusTitle) (isRecord ? body : title).focus();
   }
 
   function setupImageInput(editor) {
@@ -176,23 +178,23 @@
     for (var index = 0; index < files.length; index++) {
       var file = files[index];
       if (file.size > MAX_INPUT_IMAGE_BYTES) {
-        window.alert('图片“' + file.name + '”超过 12 MB，请先压缩后再插入。');
+        window.alert('“' + file.name + '” is over 12 MB. Please compress it first.');
         continue;
       }
       var dataUrl;
       try {
         dataUrl = await optimizeImage(file);
       } catch (error) {
-        window.alert('图片“' + (file.name || '未命名图片') + '”处理失败，请换一张图片重试。');
+        window.alert('Could not process “' + (file.name || 'untitled image') + '”. Please try another image.');
         continue;
       }
       if (dataUrl.length * 0.75 > MAX_STORED_IMAGE_BYTES) {
-        window.alert('图片“' + (file.name || '未命名图片') + '”压缩后仍然过大，请先裁剪后再插入。');
+        window.alert('“' + (file.name || 'untitled image') + '” is still too large after compression.');
         continue;
       }
       var image = document.createElement('img');
       image.src = dataUrl;
-      image.alt = file.name || '粘贴的图片';
+      image.alt = file.name || 'Pasted image';
       editor.appendChild(image);
       editor.appendChild(document.createElement('br'));
     }
@@ -253,7 +255,7 @@
   function scheduleDraftSave() {
     clearTimeout(saveTimer);
     isDirty = true;
-    setStatus('saving', '正在保存到此设备…');
+    setStatus('saving', 'Saving locally…');
     saveTimer = setTimeout(saveDraftNow, 300);
   }
 
@@ -265,10 +267,10 @@
       if (isDirty) localStorage.setItem(DRAFT_KEY, JSON.stringify(thoughts));
       else localStorage.removeItem(DRAFT_KEY);
       localStorage.removeItem(LEGACY_DRAFT_KEY);
-      setStatus(isDirty ? 'draft' : 'synced', isDirty ? '已保存到此设备，将在 1 分钟内自动同步' : '已与 GitHub 同步');
+      setStatus(isDirty ? 'draft' : 'synced', isDirty ? 'Saved locally · syncing within 1 min' : 'Synced with GitHub');
     } catch (error) {
       var storageFull = error && (error.name === 'QuotaExceededError' || error.code === 22 || error.code === 1014);
-      setStatus('error', storageFull ? '本地空间不足，请删除或缩小部分图片' : '本地保存失败，请刷新页面后重试');
+      setStatus('error', storageFull ? 'Local storage is full · remove or resize images' : 'Local save failed · refresh to retry');
       console.error('Thinking draft save failed:', error);
     }
   }
@@ -279,7 +281,7 @@
     if (thoughtsList.querySelector('.thought-card')) return;
     var placeholder = document.createElement('div');
     placeholder.className = 'thought-card thought-card--placeholder';
-    placeholder.textContent = currentSection === 'important' ? '还没有重要问题，点击“新建”开始思考。' : '还没有随手记录，想到什么就写下来吧。';
+    placeholder.textContent = currentSection === 'important' ? 'No chats yet.' : 'No records yet.';
     thoughtsList.appendChild(placeholder);
   }
 
@@ -322,14 +324,14 @@
     localStorage.removeItem(TOKEN_KEY);
     sessionStorage.removeItem(TOKEN_KEY);
     tokenInput.value = '';
-    tokenError.textContent = '此设备上的 GitHub 授权已清除。';
+    tokenError.textContent = 'GitHub authorization cleared from this device.';
   });
 
   tokenForm.addEventListener('submit', function (event) {
     if (event.submitter && event.submitter.value === 'cancel') return;
     event.preventDefault();
     var token = tokenInput.value.trim();
-    if (!token) { tokenError.textContent = '请输入 GitHub Token。'; return; }
+    if (!token) { tokenError.textContent = 'Enter a GitHub Token.'; return; }
     if (rememberToken.checked) { localStorage.setItem(TOKEN_KEY, token); sessionStorage.removeItem(TOKEN_KEY); }
     else { sessionStorage.setItem(TOKEN_KEY, token); localStorage.removeItem(TOKEN_KEY); }
     publishToGitHub(token, true);
@@ -340,7 +342,7 @@
     saveDraftNow();
     var token = getSavedToken();
     if (token) publishToGitHub(token, false, true);
-    else setStatus('draft', '已保存到此设备；设置 GitHub 授权后可自动同步');
+    else setStatus('draft', 'Saved locally · add GitHub authorization to auto-sync');
   }
 
   async function publishToGitHub(token, fromDialog, silent) {
@@ -349,7 +351,7 @@
     publishButton.disabled = true;
     confirmPublish.disabled = true;
     tokenError.textContent = '';
-    setStatus('publishing', silent ? '检测到改动，正在自动同步…' : '正在同步到 GitHub…');
+    setStatus('publishing', silent ? 'Changes detected · auto-syncing…' : 'Syncing with GitHub…');
     var endpoint = 'https://api.github.com/repos/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/contents/' + CONTENT_PATH;
     var headers = { Accept: 'application/vnd.github+json', Authorization: 'Bearer ' + token, 'X-GitHub-Api-Version': '2022-11-28' };
     try {
@@ -368,12 +370,12 @@
       baseThoughts = thoughts;
       isDirty = false;
       if (tokenDialog.open) tokenDialog.close();
-      setStatus('synced', '已自动保存并同步到 GitHub');
+      setStatus('synced', 'Auto-saved and synced with GitHub');
     } catch (error) {
-      var message = error && error.message ? error.message : '同步失败，请稍后重试。';
-      setStatus('error', '同步失败，本地草稿仍安全保留');
+      var message = error && error.message ? error.message : 'Sync failed. Please try again later.';
+      setStatus('error', 'Sync failed · local draft is safe');
       if (fromDialog && tokenDialog.open) tokenError.textContent = message;
-      else if (!silent) window.alert(message + '\n\n本地草稿仍然安全保留。');
+      else if (!silent) window.alert(message + '\n\nYour local draft is still safe.');
     } finally {
       isPublishing = false;
       publishButton.disabled = false;
@@ -384,11 +386,11 @@
   async function githubError(response) {
     var detail;
     try { detail = await response.json(); } catch (error) { detail = {}; }
-    if (response.status === 401) return new Error('Token 无效，请在 GitHub 设置中更新。');
-    if (response.status === 403) return new Error('Token 没有 Contents 写入权限，或请求受到限制。');
-    if (response.status === 404) return new Error('未找到仓库，请确认 Token 可访问 JaiJaiC/C.Sole。');
-    if (response.status === 409) return new Error('远程内容刚发生变化，请刷新页面后重试。');
-    return new Error(detail.message || ('GitHub 返回错误 ' + response.status));
+    if (response.status === 401) return new Error('Invalid token. Update it in GitHub Settings.');
+    if (response.status === 403) return new Error('The token needs Contents: Read and write permission.');
+    if (response.status === 404) return new Error('Repository not found. Check access to JaiJaiC/C.Sole.');
+    if (response.status === 409) return new Error('Remote content changed. Refresh and try again.');
+    return new Error(detail.message || ('GitHub error ' + response.status));
   }
 
   function encodeBase64Utf8(value) {

@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=5">
+  <link rel="stylesheet" href="style.css?v=6">
 </head>
 <body class="has-nav">
   <nav class="site-nav" aria-label="Main navigation">
@@ -40,52 +40,53 @@
 
   <main class="thoughts-container" id="thoughts-content" hidden>
     <section class="editor-bar" aria-label="Thinking editor">
-      <div class="editor-status-wrap"><span class="editor-status-dot" id="editor-status-dot" aria-hidden="true"></span><span class="editor-status" id="editor-status" role="status" aria-live="polite">正在读取…</span></div>
+      <div class="editor-status-wrap"><span class="editor-status-dot" id="editor-status-dot" aria-hidden="true"></span><span class="editor-status" id="editor-status" role="status" aria-live="polite">Loading…</span></div>
       <div class="editor-actions">
-        <button class="editor-button editor-button--quiet" id="add-thought" type="button">＋ 新建</button>
-        <button class="editor-button editor-button--quiet" id="github-settings" type="button">GitHub 设置</button>
-        <button class="editor-button editor-button--primary" id="publish-thoughts" type="button">立即同步</button>
+        <button class="editor-button editor-button--quiet" id="add-thought" type="button">＋ New</button>
+        <button class="editor-button editor-button--quiet" id="github-settings" type="button">GitHub Settings</button>
+        <button class="editor-button editor-button--primary" id="publish-thoughts" type="button">Sync Now</button>
       </div>
     </section>
 
-    <nav class="thinking-tabs" aria-label="记录分类">
-      <button class="thinking-tab is-active" type="button" data-section="important"><span>Deep Questions</span><small>Questions worth thinking through</small></button>
-      <button class="thinking-tab" type="button" data-section="notes"><span>Quick Notes</span><small>Ideas, fragments &amp; observations</small></button>
+    <nav class="thinking-tabs" aria-label="Note categories">
+      <button class="thinking-tab is-active" type="button" data-section="important"><span>Chat</span></button>
+      <button class="thinking-tab" type="button" data-section="notes"><span>Record</span></button>
     </nav>
-    <p class="editor-hint">内容实时保存在此设备，每 1 分钟检查并自动同步。正文支持拖入图片，或用 Ctrl/Cmd + V 粘贴截图。</p>
     <section id="thoughts-list" aria-label="Thoughts"></section>
 
     <template id="thought-template">
       <article class="thought-card">
-        <div class="thought-card-toolbar">
-          <label class="thought-date-label"><span class="sr-only">日期</span><input class="thought-date" type="date" aria-label="日期"></label>
-          <button class="thought-delete" type="button" aria-label="删除这条记录" title="删除">×</button>
+        <div class="thought-card-header">
+          <h2 class="thought-title" contenteditable="true" data-placeholder="Title…" aria-label="Title" spellcheck="true"></h2>
+          <div class="thought-card-toolbar">
+            <label class="thought-date-label"><span class="sr-only">Date</span><input class="thought-date" type="date" aria-label="Date"></label>
+            <button class="thought-delete" type="button" aria-label="Delete this note" title="Delete">×</button>
+          </div>
         </div>
-        <h2 class="thought-title" contenteditable="true" data-placeholder="写一个标题…" aria-label="标题" spellcheck="true"></h2>
-        <div class="thought-excerpt" contenteditable="true" data-placeholder="记下此刻的想法；可拖入或粘贴图片…" aria-label="正文" spellcheck="true"></div>
+        <div class="thought-excerpt" contenteditable="true" data-placeholder="Write something…" aria-label="Content" spellcheck="true"></div>
       </article>
     </template>
   </main>
 
   <dialog class="token-dialog" id="token-dialog">
     <form method="dialog" class="token-dialog-inner" id="token-form">
-      <button class="token-dialog-close" value="cancel" aria-label="关闭" type="submit" formnovalidate>×</button>
-      <p class="token-dialog-kicker">GitHub 自动同步</p>
-      <h2>在此设备记住授权</h2>
-      <p>输入一个仅可访问 <strong>JaiJaiC/C.Sole</strong>、具有 <strong>Contents: Read and write</strong> 权限的 Fine-grained Token。保存后每分钟会在有改动时自动提交。</p>
+      <button class="token-dialog-close" value="cancel" aria-label="Close" type="submit" formnovalidate>×</button>
+      <p class="token-dialog-kicker">GitHub auto-sync</p>
+      <h2>Remember authorization</h2>
+      <p>Use a fine-grained token limited to <strong>JaiJaiC/C.Sole</strong> with <strong>Contents: Read and write</strong>. Changes will sync automatically every minute.</p>
       <label class="token-label" for="github-token">GitHub Token</label>
       <input class="token-input" id="github-token" type="password" autocomplete="off" placeholder="github_pat_…">
-      <label class="remember-token"><input id="remember-token" type="checkbox" checked> 在此浏览器中长期记住（否则只记住到关闭标签页）</label>
-      <p class="token-security">Token 不会写入网页或 Git 仓库。共享设备请勿勾选；已暴露的 Token 请立即撤销。</p>
+      <label class="remember-token"><input id="remember-token" type="checkbox" checked> Remember in this browser</label>
+      <p class="token-security">The token is never committed to the website or repository. Do not enable this on a shared device.</p>
       <p class="token-error" id="token-error" role="alert"></p>
       <div class="token-dialog-actions">
-        <button class="token-forget" id="forget-token" type="button">清除此设备授权</button>
-        <button class="editor-button editor-button--primary" id="confirm-publish" value="default" type="submit">保存并同步</button>
+        <button class="token-forget" id="forget-token" type="button">Clear authorization</button>
+        <button class="editor-button editor-button--primary" id="confirm-publish" value="default" type="submit">Save &amp; Sync</button>
       </div>
     </form>
   </dialog>
 
   <footer class="site-footer"><p class="footer-text">© 2026 C.Sole</p></footer>
-  <script src="script.js?v=5" defer></script>
+  <script src="script.js?v=6" defer></script>
 </body>
 </html>
