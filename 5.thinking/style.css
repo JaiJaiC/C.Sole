@@ -185,12 +185,14 @@ body.has-nav { padding-top: 52px; }
 }
 
 .hero-subtitle {
-  font-size: 0.95rem;
+  font-family: var(--font-sans);
+  font-size: clamp(0.8rem, 2vw, 0.95rem);
   color: var(--color-text-dim);
   font-weight: 300;
-  letter-spacing: 0.1em;
+  line-height: 1.6;
+  letter-spacing: 0.12em;
   text-transform: lowercase;
-  margin-top: 0.6rem;
+  margin: 0.8rem 0 0.5rem;
 }
 
 /* ═══════ THOUGHTS LIST ═══════ */
