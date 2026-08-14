@@ -148,17 +148,14 @@ body.has-nav { padding-top: 52px; }
   padding: 10vh 2rem 6vh;
 }
 .hero-title {
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
   font-size: clamp(3rem, 8vw, 5.5rem);
   font-weight: 600;
   line-height: 1;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.02em;
   margin: 0;
   color: var(--color-accent);
-}
-.hero-title-3d {
-  font: inherit;
-  letter-spacing: inherit;
+  white-space: nowrap;
 }
 .hero-subtitle {
   font-family: 'Cormorant Garamond', Georgia, serif;
@@ -311,7 +308,7 @@ body.has-nav { padding-top: 52px; }
   .nav-logo-img { height: 28px; width: 28px; flex-shrink: 0; }
   body.has-nav { padding-top: 46px; }
   .hero { padding: 6vh 1.5rem 4vh; }
-  .hero-title { font-size: clamp(2.5rem, 10vw, 3.5rem); }
+  .hero-title { font-size: clamp(2.1rem, 10vw, 3.5rem); }
   .masonry { column-count: 1; width: 92%; }
   .img-card { margin-bottom: 16px; }
   .section-title { margin: 3rem 0 1.5rem; }
