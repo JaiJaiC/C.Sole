@@ -73,7 +73,9 @@ html:not([data-theme="colorful"]) body { background-image: none; }
 /* Keep fixed navigation and overlays from widening the mobile page. */
 html,
 body {
+  width: 100%;
   max-width: 100%;
+  overflow-x: hidden;
   overflow-x: clip;
   overscroll-behavior-x: none;
 }
@@ -276,8 +278,10 @@ html[data-theme="gray"] #notes-rain { opacity: 0.34; }
 
 @media (max-width: 640px) {
   .site-nav {
+    box-sizing: border-box;
     width: 100%;
     max-width: 100vw;
+    min-width: 0;
     justify-content: center;
     padding-right: max(4px, env(safe-area-inset-right)) !important;
     padding-left: max(4px, env(safe-area-inset-left)) !important;
@@ -287,11 +291,15 @@ html[data-theme="gray"] #notes-rain { opacity: 0.34; }
   .site-nav .nav-logo { display: none; }
   .site-nav .nav-links {
     width: 100%;
+    max-width: 100%;
     min-width: 0;
     justify-content: center;
     gap: clamp(0px, 0.8vw, 4px);
   }
-  .site-nav .nav-links > li { min-width: 0; }
+  .site-nav .nav-links > li {
+    min-width: 0;
+    flex: 0 1 auto;
+  }
   .site-nav .nav-links > li > a,
   .site-nav .nav-links > li > .nav-dropdown-btn {
     padding: 5px clamp(3px, 1.5vw, 8px) !important;
