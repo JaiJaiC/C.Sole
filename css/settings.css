@@ -292,7 +292,7 @@ html[data-theme="light"] #notes-rain { opacity: 0.28; }
     justify-content: flex-end;
     align-items: center;
     align-self: stretch;
-    gap: 5px;
+    gap: 10px;
   }
   .site-nav .nav-links > li {
     display: flex;
@@ -314,7 +314,7 @@ html[data-theme="light"] #notes-rain { opacity: 0.28; }
     font-size: 0.8rem !important;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif !important;
     line-height: 1 !important;
-    letter-spacing: 0.02em !important;
+    letter-spacing: 0.023em !important;
     white-space: nowrap;
   }
   .settings-nav-item {
