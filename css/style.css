@@ -659,6 +659,17 @@ body.has-nav {
 .playlist-item:hover { background: var(--color-elevated); }
 .playlist-item:focus-visible { outline: 2px solid var(--color-accent); outline-offset: -2px; }
 
+.playlist-item--disabled,
+.playlist-item--disabled:hover {
+  color: var(--color-text-muted);
+  background: transparent;
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+.playlist-item--disabled .track-name,
+.playlist-item--disabled .track-num,
+.playlist-item--disabled .track-duration { color: var(--color-text-muted); }
+
 .playlist-item--active {
   background: var(--color-accent-dim);
   border-left: 3px solid var(--color-accent);

@@ -7,10 +7,25 @@
   var scriptUrl = document.currentScript && document.currentScript.src;
   var siteRoot = scriptUrl ? new URL('../', scriptUrl) : new URL('../', window.location.href);
   var playlist = [
-    { title: '我是真的爱上你', src: '1.music/我是真的爱上你.mp3' },
-    { title: '夜空中最亮的星', src: '1.music/夜空中最亮的星.mp3' },
+    { title: '我是真的爱上你', src: '1.music/我是真的爱上你.mp3', disabled: true },
+    { title: '夜空中最亮的星', src: '1.music/夜空中最亮的星.mp3', disabled: true },
     { title: '无名的人', src: '1.music/无名的人.mp3' }
   ];
+  var BASE_GAIN_DB = 10;
+  var BASE_GAIN = Math.pow(10, BASE_GAIN_DB / 20);
+
+  function isPlayableTrack(index) {
+    return index >= 0 && index < playlist.length && !playlist[index].disabled;
+  }
+
+  function findPlayableIndex(start, direction) {
+    var step = direction < 0 ? -1 : 1;
+    for (var offset = 0; offset < playlist.length; offset++) {
+      var index = (start + offset * step + playlist.length * 2) % playlist.length;
+      if (isPlayableTrack(index)) return index;
+    }
+    return -1;
+  }
 
   function readJson(key) {
     try { return JSON.parse(localStorage.getItem(key) || '{}'); } catch (e) { return {}; }
@@ -26,7 +41,10 @@
 
   var playerState = readJson(PLAYER_KEY);
   playerState.currentIndex = Number.isInteger(playerState.currentIndex) ? playerState.currentIndex : 0;
-  if (playerState.currentIndex < 0 || playerState.currentIndex >= playlist.length) playerState.currentIndex = 0;
+  if (!isPlayableTrack(playerState.currentIndex)) {
+    playerState.currentIndex = findPlayableIndex(0, 1);
+    playerState.currentTime = 0;
+  }
   playerState.currentTime = Number.isFinite(playerState.currentTime) ? playerState.currentTime : 0;
   playerState.volume = Number.isFinite(playerState.volume) ? Math.max(0, Math.min(1, playerState.volume)) : 0.8;
   playerState.isPlaying = playerState.isPlaying === true;
@@ -66,7 +84,7 @@
 
   function themeOption(value, label) {
     return '<label class="theme-option"><input type="radio" name="site-theme" value="' + value + '">' +
-      '<span class="theme-swatch"><i class="theme-dot theme-dot--' + value + '"></i>' + label + '</span></label>';
+      '<span class="theme-swatch theme-swatch--' + value + '"><i class="theme-dot theme-dot--' + value + '"></i>' + label + '</span></label>';
   }
 
   var gearButton = gearItem.querySelector('.settings-trigger');
@@ -76,6 +94,9 @@
   var themeInputs = backdrop.querySelectorAll('input[name="site-theme"]');
   var mainPlayer = window.CSolePlayer || null;
   var audio = null;
+  var globalAudioCtx = null;
+  var globalSourceNode = null;
+  var globalGainNode = null;
   var miniPlayer = null;
   var miniTitle = null;
   var miniStatus = null;
@@ -225,7 +246,24 @@
     if (settings.musicEnabled && playerState.isPlaying) playGlobal(false);
   }
 
+  function initGlobalAudioContext() {
+    if (globalAudioCtx || !audio) return;
+    try {
+      globalAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      globalSourceNode = globalAudioCtx.createMediaElementSource(audio);
+      globalGainNode = globalAudioCtx.createGain();
+      globalGainNode.gain.value = BASE_GAIN;
+      globalSourceNode.connect(globalGainNode);
+      globalGainNode.connect(globalAudioCtx.destination);
+    } catch (error) {
+      globalAudioCtx = null;
+      globalSourceNode = null;
+      globalGainNode = null;
+    }
+  }
+
   function ensureTrack() {
+    if (!isPlayableTrack(playerState.currentIndex)) playerState.currentIndex = findPlayableIndex(0, 1);
     var expected = new URL(playlist[playerState.currentIndex].src, siteRoot).href;
     if (audio.src !== expected) {
       pendingTime = playerState.currentTime;
@@ -237,6 +275,8 @@
 
   function playGlobal(fromUser) {
     ensureTrack();
+    initGlobalAudioContext();
+    if (globalAudioCtx && globalAudioCtx.state === 'suspended') globalAudioCtx.resume();
     miniStatus.textContent = 'Loading…';
     updateMini();
     var promise = audio.play();
@@ -251,7 +291,7 @@
 
   function changeTrack(direction, forcePlay) {
     var wasPlaying = forcePlay || !audio.paused;
-    playerState.currentIndex = (playerState.currentIndex + direction + playlist.length) % playlist.length;
+    playerState.currentIndex = findPlayableIndex(playerState.currentIndex + direction, direction);
     playerState.currentTime = 0;
     pendingTime = 0;
     audio.src = '';

@@ -25,13 +25,15 @@
       title: '我是真的爱上你',
       artist: 'C.Sole',
       src: '1.music/我是真的爱上你.mp3',
-      cover: COVERS['我是真的爱上你']
+      cover: COVERS['我是真的爱上你'],
+      disabled: true
     },
     {
       title: '夜空中最亮的星',
       artist: 'C.Sole',
       src: '1.music/夜空中最亮的星.mp3',
-      cover: COVERS['夜空中最亮的星']
+      cover: COVERS['夜空中最亮的星'],
+      disabled: true
     },
     {
       title: '无名的人',
@@ -40,6 +42,19 @@
       cover: COVERS['无名的人']
     }
   ];
+
+  function isPlayableTrack(index) {
+    return index >= 0 && index < PLAYLIST.length && !PLAYLIST[index].disabled;
+  }
+
+  function findPlayableIndex(start, direction) {
+    var step = direction < 0 ? -1 : 1;
+    for (var offset = 0; offset < PLAYLIST.length; offset++) {
+      var index = (start + offset * step + PLAYLIST.length * 2) % PLAYLIST.length;
+      if (isPlayableTrack(index)) return index;
+    }
+    return -1;
+  }
 
   // ─── LocalStorage ─────────────────────────────────────────
   var STATE_KEY = 'csole_player';
@@ -89,7 +104,10 @@
   var audioCtx = null;
   var analyser = null;
   var sourceNode = null;
+  var gainNode = null;
   var visRunning = false;
+  var BASE_GAIN_DB = 10;
+  var BASE_GAIN = Math.pow(10, BASE_GAIN_DB / 20);
 
   function initAudioContext() {
     if (audioCtx) return;
@@ -99,17 +117,23 @@
       analyser.fftSize = 256;
       analyser.smoothingTimeConstant = 0.7;
       sourceNode = audioCtx.createMediaElementSource(audio);
+      gainNode = audioCtx.createGain();
+      gainNode.gain.value = BASE_GAIN;
       sourceNode.connect(analyser);
-      analyser.connect(audioCtx.destination);
+      analyser.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
     } catch (e) {
-      audioCtx = null; analyser = null;
+      audioCtx = null; analyser = null; gainNode = null;
     }
   }
 
   // ─── Player State ─────────────────────────────────────────
   var saved = loadState();
   var savedIndex = Number.isInteger(saved.currentIndex) ? saved.currentIndex : 0;
-  if (savedIndex < 0 || savedIndex >= PLAYLIST.length) savedIndex = 0;
+  if (!isPlayableTrack(savedIndex)) {
+    savedIndex = findPlayableIndex(0, 1);
+    saved.currentTime = 0;
+  }
   var state = {
     currentIndex:   savedIndex,
     isPlaying:      false,
@@ -288,7 +312,7 @@
   // ═══════ PLAYER METHODS ════════════════════════════════════
 
   function loadTrack(index, deferAudio) {
-    if (index < 0 || index >= PLAYLIST.length) return;
+    if (!isPlayableTrack(index)) return;
     var trackChanged = index !== state.currentIndex;
     state.currentIndex = index;
     if (trackChanged) state.currentTime = 0;
@@ -311,6 +335,7 @@
   }
 
   function play() {
+    if (!isPlayableTrack(state.currentIndex)) return;
     if (!audio.getAttribute('src')) loadTrack(state.currentIndex);
     ensureVisRunning();
     // Must resume AudioContext synchronously (iOS requirement)
@@ -335,10 +360,10 @@
     if (state.shuffleHistory.length > 20) state.shuffleHistory.shift();
     var nextIdx;
     if (state.isShuffled) {
-      do { nextIdx = Math.floor(Math.random() * PLAYLIST.length); }
-      while (nextIdx === state.currentIndex && PLAYLIST.length > 1);
+      var playable = PLAYLIST.map(function (track, index) { return track.disabled ? -1 : index; }).filter(function (index) { return index >= 0; });
+      nextIdx = playable[Math.floor(Math.random() * playable.length)];
     } else {
-      nextIdx = (state.currentIndex + 1) % PLAYLIST.length;
+      nextIdx = findPlayableIndex(state.currentIndex + 1, 1);
     }
     loadTrack(nextIdx);
     setTimeout(function () { if (state.isPlaying) play(); }, 80);
@@ -346,12 +371,13 @@
 
   function prev() {
     if (state.shuffleHistory.length > 0) {
-      loadTrack(state.shuffleHistory.pop());
+      var historyIndex = state.shuffleHistory.pop();
+      loadTrack(isPlayableTrack(historyIndex) ? historyIndex : findPlayableIndex(state.currentIndex - 1, -1));
       setTimeout(function () { if (state.isPlaying) play(); }, 80);
       return;
     }
     if (audio.currentTime > 3) { audio.currentTime = 0; play(); return; }
-    var prevIdx = (state.currentIndex - 1 + PLAYLIST.length) % PLAYLIST.length;
+    var prevIdx = findPlayableIndex(state.currentIndex - 1, -1);
     loadTrack(prevIdx);
     setTimeout(function () { if (state.isPlaying) play(); }, 80);
   }
@@ -430,14 +456,22 @@
     PLAYLIST.forEach(function (track, index) {
       var li = document.createElement('li');
       li.className = 'playlist-item';
-      li.setAttribute('tabindex', '0');
       li.setAttribute('role', 'button');
-      li.setAttribute('aria-label', 'Play ' + track.title);
-      if (index === state.currentIndex) li.classList.add('playlist-item--active');
+      if (track.disabled) {
+        li.classList.add('playlist-item--disabled');
+        li.setAttribute('aria-disabled', 'true');
+        li.setAttribute('aria-label', track.title + ' unavailable');
+      } else {
+        li.setAttribute('tabindex', '0');
+        li.setAttribute('aria-label', 'Play ' + track.title);
+        if (index === state.currentIndex) li.classList.add('playlist-item--active');
+      }
 
       var numSpan = document.createElement('span');
       numSpan.className = 'track-num';
-      if (index === state.currentIndex && state.isPlaying) {
+      if (track.disabled) {
+        numSpan.textContent = '—';
+      } else if (index === state.currentIndex && state.isPlaying) {
         numSpan.innerHTML = '<span class="playing-indicator"><span class="pi-bar"></span><span class="pi-bar"></span><span class="pi-bar"></span><span class="pi-bar"></span></span>';
       } else if (index === state.currentIndex) {
         numSpan.innerHTML = '▶';
@@ -453,18 +487,21 @@
       var durSpan = document.createElement('span');
       durSpan.className = 'track-duration';
       durSpan.setAttribute('data-index', index);
+      if (track.disabled) durSpan.textContent = 'Unavailable';
 
       li.appendChild(numSpan);
       li.appendChild(nameSpan);
       li.appendChild(durSpan);
 
-      li.addEventListener('click', function () {
-        if (index === state.currentIndex) { audio.currentTime = 0; play(); }
-        else { state.shuffleHistory.push(state.currentIndex); loadTrack(index); setTimeout(function () { play(); }, 80); }
-      });
-      li.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); li.click(); }
-      });
+      if (!track.disabled) {
+        li.addEventListener('click', function () {
+          if (index === state.currentIndex) { audio.currentTime = 0; play(); }
+          else { state.shuffleHistory.push(state.currentIndex); loadTrack(index); setTimeout(function () { play(); }, 80); }
+        });
+        li.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); li.click(); }
+        });
+      }
 
       dom.playlist.appendChild(li);
     });
@@ -547,37 +584,34 @@
     renderPlaylist();
     renderPlayingState();
 
+    initAudioContext();
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+
+    function armInteractionPlayback() {
+      var started = false;
+
+      function onInteraction() {
+        if (started) return;
+        started = true;
+        document.removeEventListener('click', onInteraction);
+        document.removeEventListener('touchend', onInteraction);
+        document.removeEventListener('keydown', onInteraction);
+        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+        if (!state.isPlaying) play();
+      }
+
+      // A user gesture is required both when media autoplay is blocked and
+      // when the +10 dB Web Audio graph starts in a suspended state.
+      document.addEventListener('click', onInteraction);
+      document.addEventListener('touchend', onInteraction);
+      document.addEventListener('keydown', onInteraction);
+    }
+
     var p = audio.play();
     if (p && p.then) {
-      p.catch(function () {
-        // Autoplay blocked — wait for any user interaction
-        var started = false;
-
-        function onInteraction(e) {
-          if (started) return;
-          started = true;
-
-          // Remove all listeners
-          document.removeEventListener('click', onInteraction);
-          document.removeEventListener('touchend', onInteraction);
-          document.removeEventListener('keydown', onInteraction);
-
-          // Resume AudioContext (critical for iOS)
-          if (audioCtx && audioCtx.state === 'suspended') {
-            audioCtx.resume();
-          }
-
-          // Start playback
-          if (!state.isPlaying) {
-            play();
-          }
-        }
-
-        // click + touchend (iOS requires touchend for first-time audio context)
-        document.addEventListener('click', onInteraction);
-        document.addEventListener('touchend', onInteraction);
-        document.addEventListener('keydown', onInteraction);
-      });
+      p.then(function () {
+        if (audioCtx && audioCtx.state === 'suspended') armInteractionPlayback();
+      }, armInteractionPlayback);
     }
   }
 
