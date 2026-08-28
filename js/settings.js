@@ -3,7 +3,7 @@
 
   var SETTINGS_KEY = 'csole_settings';
   var PLAYER_KEY = 'csole_player';
-  var THEMES = ['dark', 'light', 'silver'];
+  var THEMES = ['dark', 'light'];
   var PLAYLIST_ORDER = 'unnamed-first-v1';
   var scriptUrl = document.currentScript && document.currentScript.src;
   var siteRoot = scriptUrl ? new URL('../', scriptUrl) : new URL('../', window.location.href);
@@ -37,7 +37,7 @@
   }
 
   var settings = readJson(SETTINGS_KEY);
-  if (settings.theme === 'gray' || settings.theme === 'colorful') settings.theme = 'silver';
+  if (settings.theme === 'gray' || settings.theme === 'colorful' || settings.theme === 'silver') settings.theme = 'light';
   settings.theme = THEMES.indexOf(settings.theme) >= 0 ? settings.theme : 'dark';
   settings.musicEnabled = settings.musicEnabled === true;
   writeJson(SETTINGS_KEY, settings);
@@ -78,7 +78,7 @@
       '<div class="settings-heading"><h2 id="settings-title">Settings</h2><button class="settings-close" type="button" aria-label="Close settings">×</button></div>' +
       '<div class="settings-section"><span class="settings-label">Theme</span>' +
         '<div class="theme-options">' +
-          themeOption('dark', 'Dark') + themeOption('light', 'White') + themeOption('silver', 'Gray') +
+          themeOption('dark', 'Dark') + themeOption('light', 'White') +
         '</div>' +
       '</div>' +
       '<div class="settings-section"><span class="settings-label">Music</span>' +
