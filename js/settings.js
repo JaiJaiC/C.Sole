@@ -3,13 +3,14 @@
 
   var SETTINGS_KEY = 'csole_settings';
   var PLAYER_KEY = 'csole_player';
-  var THEMES = ['dark', 'light', 'gray', 'colorful'];
+  var THEMES = ['dark', 'light', 'silver'];
+  var PLAYLIST_ORDER = 'unnamed-first-v1';
   var scriptUrl = document.currentScript && document.currentScript.src;
   var siteRoot = scriptUrl ? new URL('../', scriptUrl) : new URL('../', window.location.href);
   var playlist = [
-    { title: '我是真的爱上你', src: '1.music/我是真的爱上你.mp3', disabled: true },
+    { title: '无名的人', src: '1.music/无名的人.mp3' },
     { title: '夜空中最亮的星', src: '1.music/夜空中最亮的星.mp3', disabled: true },
-    { title: '无名的人', src: '1.music/无名的人.mp3' }
+    { title: '我是真的爱上你', src: '1.music/我是真的爱上你.mp3', disabled: true }
   ];
   var BASE_GAIN_DB = 10;
   var BASE_GAIN = Math.pow(10, BASE_GAIN_DB / 20);
@@ -36,11 +37,18 @@
   }
 
   var settings = readJson(SETTINGS_KEY);
+  if (settings.theme === 'gray' || settings.theme === 'colorful') settings.theme = 'silver';
   settings.theme = THEMES.indexOf(settings.theme) >= 0 ? settings.theme : 'dark';
   settings.musicEnabled = settings.musicEnabled === true;
+  writeJson(SETTINGS_KEY, settings);
 
   var playerState = readJson(PLAYER_KEY);
   playerState.currentIndex = Number.isInteger(playerState.currentIndex) ? playerState.currentIndex : 0;
+  if (playerState.playlistOrder !== PLAYLIST_ORDER) {
+    if (playerState.currentIndex === 2) playerState.currentIndex = 0;
+    else playerState.currentTime = 0;
+    playerState.playlistOrder = PLAYLIST_ORDER;
+  }
   if (!isPlayableTrack(playerState.currentIndex)) {
     playerState.currentIndex = findPlayableIndex(0, 1);
     playerState.currentTime = 0;
@@ -70,7 +78,7 @@
       '<div class="settings-heading"><h2 id="settings-title">Settings</h2><button class="settings-close" type="button" aria-label="Close settings">×</button></div>' +
       '<div class="settings-section"><span class="settings-label">Theme</span>' +
         '<div class="theme-options">' +
-          themeOption('dark', 'Dark') + themeOption('light', 'White') + themeOption('gray', 'Gray') + themeOption('colorful', 'Colorful') +
+          themeOption('dark', 'Dark') + themeOption('light', 'White') + themeOption('silver', 'Gray') +
         '</div>' +
       '</div>' +
       '<div class="settings-section"><span class="settings-label">Music</span>' +
@@ -120,6 +128,7 @@
   function saveSettings() { writeJson(SETTINGS_KEY, settings); }
 
   function savePlayerState() {
+    playerState.playlistOrder = PLAYLIST_ORDER;
     if (audio) {
       playerState.currentTime = Number.isFinite(audio.currentTime) ? audio.currentTime : playerState.currentTime;
       playerState.volume = audio.volume;

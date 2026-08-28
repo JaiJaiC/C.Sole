@@ -22,11 +22,10 @@
   // ─── Playlist Data ────────────────────────────────────────
   var PLAYLIST = [
     {
-      title: '我是真的爱上你',
+      title: '无名的人',
       artist: 'C.Sole',
-      src: '1.music/我是真的爱上你.mp3',
-      cover: COVERS['我是真的爱上你'],
-      disabled: true
+      src: '1.music/无名的人.mp3',
+      cover: COVERS['无名的人']
     },
     {
       title: '夜空中最亮的星',
@@ -36,12 +35,14 @@
       disabled: true
     },
     {
-      title: '无名的人',
+      title: '我是真的爱上你',
       artist: 'C.Sole',
-      src: '1.music/无名的人.mp3',
-      cover: COVERS['无名的人']
+      src: '1.music/我是真的爱上你.mp3',
+      cover: COVERS['我是真的爱上你'],
+      disabled: true
     }
   ];
+  var PLAYLIST_ORDER = 'unnamed-first-v1';
 
   function isPlayableTrack(index) {
     return index >= 0 && index < PLAYLIST.length && !PLAYLIST[index].disabled;
@@ -130,6 +131,10 @@
   // ─── Player State ─────────────────────────────────────────
   var saved = loadState();
   var savedIndex = Number.isInteger(saved.currentIndex) ? saved.currentIndex : 0;
+  if (saved.playlistOrder !== PLAYLIST_ORDER) {
+    if (savedIndex === 2) savedIndex = 0;
+    else saved.currentTime = 0;
+  }
   if (!isPlayableTrack(savedIndex)) {
     savedIndex = findPlayableIndex(0, 1);
     saved.currentTime = 0;
@@ -415,6 +420,7 @@
 
   function persistState() {
     saveState({
+      playlistOrder: PLAYLIST_ORDER,
       currentIndex: state.currentIndex,
       currentTime: state.currentTime,
       volume: state.volume,
@@ -661,6 +667,7 @@
     resumeSaved: play,
     getState: function () {
       return {
+        playlistOrder: PLAYLIST_ORDER,
         currentIndex: state.currentIndex,
         currentTime: audio.getAttribute('src') ? audio.currentTime : state.currentTime,
         volume: state.volume,
