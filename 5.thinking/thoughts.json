@@ -21,13 +21,6 @@
     "bodyHtml": "喜欢秩序揭棋so elegant"
   },
   {
-    "id": "t-msrm1pql-fdjjx7",
-    "type": "important",
-    "date": "2026-08-11",
-    "title": "Robotics field人物",
-    "bodyHtml": "==何泰然==<br>SJTU本，CMU PhD，WhynotTV Host，无可奉告，任尔东西南北风<br>==陈天奇==<br>极致，长期主义，不怕失败，要做有impact的work<br>时间是有限的，一定要做想要做的事情<br>失败也没那么可怕，接受可以失败这个事实<br>开始想要做的事情和最后做的事情一定是不一样的<br>reinvent yourself<br>技术的通用性！<br>==翁家翌==<br>工程能力很重要，教一个researcher做engineering比教一个engineer做research难的多<br>发paper完全没有用，“我已经有paper了”<br>做卖铲子的人<br>His evaluation metric：1.github star 2.google citation 3.name出现次数<br>AI lab 需要infra<br>RL的研究，学术界就是对着atari、mojoco这几个task overfit，调参，比谁在100k分数高；工业界是用RL去解决真实的问题<br>consistency；藏一代，研发一代，发一代<br>去探索想要什么，这个问题值得一生去思考<br>==稚晖君==<br>打造的ip是Super Iron Man<br>==王冠政==<br>跟最前沿的东西，做有意义的任务<br>任何领域，去看他最顶尖最先进的东西，以不至于落后的太多；如果你一开始做的是传统的东西，那么你一开始就落后了！！！<br>一个好的读论文的习惯，熟悉世界上的顶尖强组；看你想要什么，选择有很多<br>==Danfei Xu==<br>I want to behavior clone a human（人类水平的克隆行为）<br>interest-driven；do something different<br>美本；野兽总独行；seek uncertanty；给带robotics的company打电话；cold call，what to lose；去CMU直接出现在教授前面；喜欢硬件；Stanford;structured泛化；compositionality；2023 ALOHA<br>full-stack是唯一出路；不喜欢top-down；需要足够的自我自由度<br>robot learning；data-driven；egominic；META ego4d；vension<br>人是another robot；robot是another 人<br>强调第一人称是scable？精准性和可拓展性的取舍<br>Youtube Data；paradigm<br>触觉（第二重要哈哈哈）；视觉，RGB量纲<br>UMI data；humanoid和human data相互成就<br>camera会吞噬很多其他传感器，部分测量；资本驱动；成功就是会造成另一种程度的失败<br>system很重要需要强调，1亿小时数据；overfit<br>hands-on off；<br>实验室文化文档；全栈；idea影响别人；taste自己觉得什么是对的自己的理解，培养taste需要耐心，taste导致了研究什么样的事情；错失恐惧；专注变难了；基于证据才能相信，不能直接相信<br>robotics达到GPT-3 moment<br>多看一些好的人他为什么去做这件事情<br>参与在一个能够改变世界的领域，在正确的时间，在正确的地方，是一件非常幸运的事情，勇敢做自己想做的事情，不要有太多包袱，没有什么可以失去的<br>==Richard Sutton==<br>苦涩的教训"
-  },
-  {
     "id": "t-msrm1pql-2hfaov",
     "type": "important",
     "date": "2026-08-11",
