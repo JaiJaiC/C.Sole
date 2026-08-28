@@ -283,12 +283,14 @@ html[data-theme="light"] #notes-rain { opacity: 0.28; }
   }
   .site-nav .nav-logo-img { width: 26px; height: 26px; }
   .site-nav .nav-links {
-    width: auto;
+    display: grid;
+    grid-template-columns: 44px 38px 88px 65px 26px;
+    width: 261px;
     max-width: 100%;
     min-width: 0;
-    flex: 1 1 auto;
-    margin-left: 0;
-    justify-content: space-between;
+    flex: 0 0 261px;
+    margin-left: auto;
+    justify-content: initial;
     align-items: center;
     align-self: stretch;
     gap: 0;
@@ -296,23 +298,25 @@ html[data-theme="light"] #notes-rain { opacity: 0.28; }
   .site-nav .nav-links > li {
     display: flex;
     align-items: center;
+    justify-content: center;
     height: 100%;
     min-width: 0;
-    flex: 0 0 auto;
   }
   .site-nav .nav-links > li > a,
   .site-nav .nav-links > li > .nav-dropdown-btn {
     box-sizing: border-box;
     display: flex;
     align-items: center;
+    justify-content: center;
+    width: 100%;
     height: 100%;
-    padding: 5px 2px !important;
+    padding: 5px 0 !important;
     font-size: 0.8rem !important;
     line-height: 1 !important;
-    letter-spacing: 0.05em !important;
+    letter-spacing: 0.035em !important;
     white-space: nowrap;
   }
-  .settings-nav-item { margin-left: -2px; }
+  .settings-nav-item { margin-left: 0; }
   .settings-trigger { width: 26px; height: 26px; }
   .settings-trigger svg { width: 16px; height: 16px; }
   .theme-options { grid-template-columns: repeat(2, 1fr); }
