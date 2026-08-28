@@ -26,6 +26,13 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
+      - name: Add /C/ entry point
+        shell: bash
+        run: |
+          mkdir -p C
+          cp index.html C/index.html
+          sed -i '0,/<head>/s//<head>\n  <base href="..\/">/' C/index.html
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
