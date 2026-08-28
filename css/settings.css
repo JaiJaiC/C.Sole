@@ -70,6 +70,14 @@ html[data-theme="colorful"] body {
 
 html:not([data-theme="colorful"]) body { background-image: none; }
 
+/* Keep fixed navigation and overlays from widening the mobile page. */
+html,
+body {
+  max-width: 100%;
+  overflow-x: clip;
+  overscroll-behavior-x: none;
+}
+
 html[data-theme]:not([data-theme="dark"]) .site-nav {
   background: var(--settings-nav-bg);
   border-bottom-color: var(--settings-border);
@@ -267,6 +275,30 @@ html[data-theme="gray"] #notes-rain { opacity: 0.34; }
 .mini-control--play:hover { color: #16120c; background: var(--color-accent); filter: brightness(1.08); }
 
 @media (max-width: 640px) {
+  .site-nav {
+    width: 100%;
+    max-width: 100vw;
+    justify-content: center;
+    padding-right: max(4px, env(safe-area-inset-right)) !important;
+    padding-left: max(4px, env(safe-area-inset-left)) !important;
+    overflow: visible;
+    touch-action: pan-y;
+  }
+  .site-nav .nav-logo { display: none; }
+  .site-nav .nav-links {
+    width: 100%;
+    min-width: 0;
+    justify-content: center;
+    gap: clamp(0px, 0.8vw, 4px);
+  }
+  .site-nav .nav-links > li { min-width: 0; }
+  .site-nav .nav-links > li > a,
+  .site-nav .nav-links > li > .nav-dropdown-btn {
+    padding: 5px clamp(3px, 1.5vw, 8px) !important;
+    font-size: clamp(0.66rem, 2.5vw, 0.76rem) !important;
+    letter-spacing: 0 !important;
+    white-space: nowrap;
+  }
   .settings-nav-item { margin-left: -2px; }
   .settings-trigger { width: 28px; height: 28px; }
   .settings-trigger svg { width: 16px; height: 16px; }
@@ -276,14 +308,6 @@ html[data-theme="gray"] #notes-rain { opacity: 0.34; }
 }
 
 @media (max-width: 420px) {
-  .site-nav { justify-content: center; padding-right: 4px !important; padding-left: 4px !important; }
-  .site-nav .nav-logo { display: none; }
-  .site-nav .nav-links { width: 100%; justify-content: center; gap: 0; }
-  .site-nav .nav-links a {
-    padding: 4px 3px !important;
-    font-size: 0.67rem !important;
-    letter-spacing: 0 !important;
-  }
   .settings-nav-item { margin-left: 0; }
   .settings-trigger { width: 26px; height: 26px; }
 }
