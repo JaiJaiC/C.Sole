@@ -292,7 +292,8 @@ html[data-theme="light"] #notes-rain { opacity: 0.28; }
     justify-content: flex-end;
     align-items: center;
     align-self: stretch;
-    gap: 10px;
+    column-gap: 10px !important;
+    row-gap: 0 !important;
   }
   .site-nav .nav-links > li {
     display: flex;
@@ -301,6 +302,8 @@ html[data-theme="light"] #notes-rain { opacity: 0.28; }
     height: 100%;
     min-width: 0;
     flex: 0 0 auto;
+    margin: 0 !important;
+    padding: 0 !important;
   }
   .site-nav .nav-links > li > a,
   .site-nav .nav-links > li > .nav-dropdown-btn {
@@ -308,13 +311,19 @@ html[data-theme="light"] #notes-rain { opacity: 0.28; }
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 100%;
+    width: auto !important;
     height: 100%;
+    flex: 0 0 auto;
+    margin: 0 !important;
     padding: 5px 0 !important;
     font-size: 0.8rem !important;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif !important;
+    font-weight: 400 !important;
+    font-kerning: none;
+    font-variant-ligatures: none;
     line-height: 1 !important;
     letter-spacing: 0.02645em !important;
+    word-spacing: 0 !important;
     white-space: nowrap;
   }
   .settings-nav-item {
